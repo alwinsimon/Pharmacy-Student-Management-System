@@ -9,6 +9,7 @@ const path = require('path');
 
 const { app: appConfig, logger: loggerConfig } = require('./config');
 const { logger } = require('./utils/logger.utils');
+const { swaggerUi, swaggerDocs } = require('./config/swagger.config');
 const { errorHandler, notFoundHandler } = require('./api/v1/middleware/error.middleware');
 const routes = require('./api/v1/routes');
 
@@ -71,6 +72,12 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// API Docs endpoint
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }'
+}));
 
 // Error handling
 app.use(notFoundHandler);
