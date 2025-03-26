@@ -27,8 +27,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Response time middleware
+// Response time middleware (skip for health check)
 app.use((req, res, next) => {
+  if (req.path === '/health') {
+    return next();
+  }
+
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
@@ -37,8 +41,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Request logging middleware
+// Request logging middleware (skip for health check)
 app.use((req, res, next) => {
+  if (req.path === '/health') {
+    return next();
+  }
+
   // Log detailed request information
   const requestInfo = {
     timestamp: new Date().toISOString(),
@@ -87,8 +95,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Morgan logging
-app.use(morgan('combined', { stream }));
+// Morgan logging (skip for health check)
+app.use(morgan('combined', { 
+  stream,
+  skip: (req) => req.path === '/health'
+}));
 
 // Health check route (before security middleware)
 app.get('/health', healthCheck);
