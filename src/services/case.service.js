@@ -641,6 +641,66 @@ class CaseService {
     
     return true;
   }
+
+  /**
+   * Update case status
+   * @param {String} caseId - Case ID
+   * @param {String} status - New status
+   * @param {String} userId - User ID updating the status
+   * @returns {Promise<Object>} Updated case
+   */
+  async updateCaseStatus(caseId, status, userId) {
+    objectId(caseId);
+    objectId(userId);
+    
+    // Validate status
+    if (!Object.values(CASE_STATUS).includes(status)) {
+      throw ValidationError.invalidValue('status', status);
+    }
+    
+    // Get the current case
+    const case_ = await this.caseRepository.findById(caseId);
+    
+    // Check if the status transition is allowed
+    const allowedTransitions = {
+      [CASE_STATUS.DRAFT]: [CASE_STATUS.SUBMITTED],
+      [CASE_STATUS.SUBMITTED]: [CASE_STATUS.IN_REVIEW, CASE_STATUS.REJECTED],
+      [CASE_STATUS.IN_REVIEW]: [CASE_STATUS.REVISION_REQUESTED, CASE_STATUS.COMPLETED],
+      [CASE_STATUS.REVISION_REQUESTED]: [CASE_STATUS.SUBMITTED],
+      [CASE_STATUS.COMPLETED]: [],
+      [CASE_STATUS.REJECTED]: []
+    };
+    
+    if (!allowedTransitions[case_.status].includes(status)) {
+      throw ApiError.badRequest(
+        `Cannot transition from ${case_.status} to ${status}`,
+        'VALIDATION_INVALID_STATUS_TRANSITION'
+      );
+    }
+    
+    // Update case status
+    const updatedCase = await this.caseRepository.updateStatus(
+      caseId,
+      status,
+      userId,
+      `Case status updated to ${status}`
+    );
+    
+    // Log status update
+    await logService.createLog({
+      user: userId,
+      action: 'update_status',
+      entity: 'case',
+      entityId: caseId,
+      description: `Case status updated to ${status}`,
+      details: {
+        oldStatus: case_.status,
+        newStatus: status
+      }
+    });
+    
+    return updatedCase;
+  }
 }
 
 module.exports = new CaseService();

@@ -4,7 +4,7 @@ const router = express.Router();
 const qrcodeController = require('../controllers/qrcodes.controller');
 const { validate } = require('../middleware/validator.middleware');
 const qrcodeValidator = require('../validators/qrcode.validator');
-const { authenticateJWT } = require('../middleware/auth.middleware');
+const { authenticate } = require('../middleware/auth.middleware');
 
 /**
  * @route GET /api/v1/qrcodes/:code
@@ -33,7 +33,7 @@ router.get(
  */
 router.post(
   '/generate',
-  authenticateJWT,
+  authenticate,
   validate(qrcodeValidator.generateQRCodeSchema),
   qrcodeController.generateQRCode
 );
@@ -45,7 +45,7 @@ router.post(
  */
 router.get(
   '/resource/:resourceType/:resourceId',
-  authenticateJWT,
+  authenticate,
   qrcodeController.getResourceQRCode
 );
 

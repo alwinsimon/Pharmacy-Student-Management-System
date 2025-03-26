@@ -4,7 +4,7 @@ const router = express.Router();
 const notificationController = require('../controllers/notifications.controller');
 const { validate } = require('../middleware/validator.middleware');
 const notificationValidator = require('../validators/notification.validator');
-const { authenticateJWT } = require('../middleware/auth.middleware');
+const { authenticate } = require('../middleware/auth.middleware');
 
 /**
  * @route GET /api/v1/notifications
@@ -13,7 +13,7 @@ const { authenticateJWT } = require('../middleware/auth.middleware');
  */
 router.get(
   '/',
-  authenticateJWT,
+  authenticate,
   notificationController.getUserNotifications
 );
 
@@ -24,7 +24,7 @@ router.get(
  */
 router.get(
   '/unread-count',
-  authenticateJWT,
+  authenticate,
   notificationController.getUnreadCount
 );
 
@@ -35,7 +35,7 @@ router.get(
  */
 router.patch(
   '/:id/read',
-  authenticateJWT,
+  authenticate,
   notificationController.markAsRead
 );
 
@@ -46,7 +46,7 @@ router.patch(
  */
 router.patch(
   '/read-all',
-  authenticateJWT,
+  authenticate,
   notificationController.markAllAsRead
 );
 

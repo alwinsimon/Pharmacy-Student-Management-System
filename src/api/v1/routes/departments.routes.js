@@ -3,7 +3,7 @@ const router = express.Router();
 const departmentController = require('../controllers/departments.controller');
 const { validate } = require('../middleware/validator.middleware');
 const departmentValidator = require('../validators/department.validator');
-const { authenticateJWT, authorizeRole, authorizePermission } = require('../middleware/auth.middleware');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth.middleware');
 const { PERMISSIONS } = require('../../../constants/permissions.constants');
 const { ROLES } = require('../../../constants/roles.constants');
 const uploadMiddleware = require('../middleware/upload.middleware');
@@ -15,7 +15,7 @@ const uploadMiddleware = require('../middleware/upload.middleware');
  */
 router.get(
   '/',
-  authenticateJWT,
+  authenticate,
   departmentController.getDepartments
 );
 
@@ -26,7 +26,7 @@ router.get(
  */
 router.get(
   '/:id',
-  authenticateJWT,
+  authenticate,
   departmentController.getDepartmentById
 );
 
@@ -37,19 +37,20 @@ router.get(
  */
 router.get(
   '/code/:code',
-  authenticateJWT,
+  authenticate,
   departmentController.getDepartmentByCode
 );
 
 /**
  * @route POST /api/v1/departments
  * @desc Create a new department
- * @access Private (Super Admin)
+ * @access Private (Manager)
  */
 router.post(
   '/',
-  authenticateJWT,
-  authorizeRole(ROLES.SUPER_ADMIN),
+  authenticate,
+  authorize(ROLES.MANAGER),
+  checkPermission(PERMISSIONS.DEPARTMENT_CREATE),
   validate(departmentValidator.createDepartmentSchema),
   departmentController.createDepartment
 );
@@ -57,12 +58,13 @@ router.post(
 /**
  * @route PUT /api/v1/departments/:id
  * @desc Update department
- * @access Private (Super Admin, Manager)
+ * @access Private (Manager)
  */
 router.put(
   '/:id',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
+  checkPermission(PERMISSIONS.DEPARTMENT_UPDATE),
   validate(departmentValidator.updateDepartmentSchema),
   departmentController.updateDepartment
 );
@@ -74,8 +76,8 @@ router.put(
  */
 router.patch(
   '/:id/status',
-  authenticateJWT,
-  authorizeRole(ROLES.SUPER_ADMIN),
+  authenticate,
+  authorize(ROLES.SUPER_ADMIN),
   validate(departmentValidator.updateStatusSchema),
   departmentController.updateDepartmentStatus
 );
@@ -87,20 +89,21 @@ router.patch(
  */
 router.post(
   '/:id/head/:userId',
-  authenticateJWT,
-  authorizeRole(ROLES.SUPER_ADMIN),
+  authenticate,
+  authorize(ROLES.SUPER_ADMIN),
   departmentController.assignDepartmentHead
 );
 
 /**
  * @route DELETE /api/v1/departments/:id
  * @desc Delete department
- * @access Private (Super Admin)
+ * @access Private (Manager)
  */
 router.delete(
   '/:id',
-  authenticateJWT,
-  authorizeRole(ROLES.SUPER_ADMIN),
+  authenticate,
+  authorize(ROLES.MANAGER),
+  checkPermission(PERMISSIONS.DEPARTMENT_DELETE),
   departmentController.deleteDepartment
 );
 
@@ -111,7 +114,7 @@ router.delete(
  */
 router.get(
   '/:id/sub-departments',
-  authenticateJWT,
+  authenticate,
   departmentController.getSubDepartments
 );
 
@@ -122,8 +125,8 @@ router.get(
  */
 router.post(
   '/:id/logo',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   uploadMiddleware.single('logo'),
   departmentController.uploadDepartmentLogo
 );

@@ -4,7 +4,7 @@ const router = express.Router();
 const userController = require('../controllers/users.controller');
 const { validate } = require('../middleware/validator.middleware');
 const userValidator = require('../validators/user.validator');
-const { authenticateJWT, authorizeRole, authorizePermission } = require('../middleware/auth.middleware');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth.middleware');
 const { PERMISSIONS } = require('../../../constants/permissions.constants');
 const { ROLES } = require('../../../constants/roles.constants');
 const uploadMiddleware = require('../middleware/upload.middleware');
@@ -16,8 +16,8 @@ const uploadMiddleware = require('../middleware/upload.middleware');
  */
 router.get(
   '/',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   userController.getUsers
 );
 
@@ -28,7 +28,7 @@ router.get(
  */
 router.get(
   '/:id',
-  authenticateJWT,
+  authenticate,
   userController.getUserById
 );
 
@@ -39,9 +39,9 @@ router.get(
  */
 router.post(
   '/',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
-  authorizePermission(PERMISSIONS.USER_CREATE),
+  authenticate,
+  authorize(ROLES.MANAGER),
+  checkPermission(PERMISSIONS.USER_CREATE),
   validate(userValidator.createUserSchema),
   userController.createUser
 );
@@ -53,7 +53,7 @@ router.post(
  */
 router.put(
   '/:id',
-  authenticateJWT,
+  authenticate,
   validate(userValidator.updateUserSchema),
   userController.updateUser
 );
@@ -65,9 +65,9 @@ router.put(
  */
 router.patch(
   '/:id/status',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
-  authorizePermission(PERMISSIONS.USER_UPDATE),
+  authenticate,
+  authorize(ROLES.MANAGER),
+  checkPermission(PERMISSIONS.USER_UPDATE),
   validate(userValidator.updateStatusSchema),
   userController.updateStatus
 );
@@ -79,8 +79,8 @@ router.patch(
  */
 router.patch(
   '/:id/permissions',
-  authenticateJWT,
-  authorizeRole(ROLES.SUPER_ADMIN),
+  authenticate,
+  authorize(ROLES.SUPER_ADMIN),
   validate(userValidator.updatePermissionsSchema),
   userController.updatePermissions
 );
@@ -92,9 +92,9 @@ router.patch(
  */
 router.delete(
   '/:id',
-  authenticateJWT,
-  authorizeRole(ROLES.SUPER_ADMIN),
-  authorizePermission(PERMISSIONS.USER_DELETE),
+  authenticate,
+  authorize(ROLES.SUPER_ADMIN),
+  checkPermission(PERMISSIONS.USER_DELETE),
   userController.deleteUser
 );
 
@@ -105,8 +105,8 @@ router.delete(
  */
 router.get(
   '/role/:role',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   userController.getUsersByRole
 );
 
@@ -117,8 +117,8 @@ router.get(
  */
 router.get(
   '/department/:departmentId',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   userController.getUsersByDepartment
 );
 
@@ -129,9 +129,9 @@ router.get(
  */
 router.post(
   '/:id/approve',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
-  authorizePermission(PERMISSIONS.USER_APPROVE),
+  authenticate,
+  authorize(ROLES.MANAGER),
+  checkPermission(PERMISSIONS.USER_APPROVE),
   userController.approveUser
 );
 
@@ -142,9 +142,9 @@ router.post(
  */
 router.post(
   '/:id/reject',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
-  authorizePermission(PERMISSIONS.USER_APPROVE),
+  authenticate,
+  authorize(ROLES.MANAGER),
+  checkPermission(PERMISSIONS.USER_APPROVE),
   validate(userValidator.rejectUserSchema),
   userController.rejectUser
 );
@@ -156,7 +156,7 @@ router.post(
  */
 router.post(
   '/:id/profile-picture',
-  authenticateJWT,
+  authenticate,
   uploadMiddleware.single('profilePicture'),
   userController.uploadProfilePicture
 );
@@ -168,8 +168,8 @@ router.post(
  */
 router.get(
   '/search',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   userController.searchUsers
 );
 

@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 // Import route modules
+const healthRoutes = require('./health.routes');
 const authRoutes = require('./auth.routes');
 const userRoutes = require('./users.routes');
 const caseRoutes = require('./cases.routes');
@@ -14,6 +15,7 @@ const departmentRoutes = require('./departments.routes');
 const notificationRoutes = require('./notifications.routes');
 
 // Register routes
+router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/cases', caseRoutes);
@@ -30,6 +32,7 @@ router.get('/', (req, res) => {
     message: 'Pharmacy College Management System API',
     version: '1.0.0',
     endpoints: {
+      health: '/health',
       auth: '/auth',
       users: '/users',
       cases: '/cases',

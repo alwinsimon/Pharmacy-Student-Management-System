@@ -4,7 +4,7 @@ const router = express.Router();
 const authController = require('../controllers/auth.controller');
 const { validate } = require('../middleware/validator.middleware');
 const authValidator = require('../validators/auth.validator');
-const { authenticateJWT } = require('../middleware/auth.middleware');
+const { authenticate } = require('../middleware/auth.middleware');
 
 /**
  * @route POST /api/v1/auth/register
@@ -46,7 +46,7 @@ router.post(
  */
 router.post(
   '/logout',
-  authenticateJWT,
+  authenticate,
   validate(authValidator.logoutSchema),
   authController.logout
 );
@@ -90,7 +90,7 @@ router.post(
  */
 router.post(
   '/change-password',
-  authenticateJWT,
+  authenticate,
   validate(authValidator.changePasswordSchema),
   authController.changePassword
 );

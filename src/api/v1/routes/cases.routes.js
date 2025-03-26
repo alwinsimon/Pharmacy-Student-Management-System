@@ -4,7 +4,7 @@ const router = express.Router();
 const caseController = require('../controllers/cases.controller');
 const { validate } = require('../middleware/validator.middleware');
 const caseValidator = require('../validators/case.validator');
-const { authenticateJWT, authorizeRole, authorizePermission } = require('../middleware/auth.middleware');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth.middleware');
 const { PERMISSIONS } = require('../../../constants/permissions.constants');
 const { ROLES } = require('../../../constants/roles.constants');
 const uploadMiddleware = require('../middleware/upload.middleware');
@@ -12,23 +12,24 @@ const uploadMiddleware = require('../middleware/upload.middleware');
 /**
  * @route GET /api/v1/cases
  * @desc Get all cases with pagination
- * @access Private (Staff, Manager, Super Admin)
+ * @access Private (Staff, Manager)
  */
 router.get(
   '/',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
+  authenticate,
+  authorize(ROLES.STAFF),
   caseController.getCases
 );
 
 /**
  * @route GET /api/v1/cases/:id
  * @desc Get case by ID
- * @access Private
+ * @access Private (Staff, Manager)
  */
 router.get(
   '/:id',
-  authenticateJWT,
+  authenticate,
+  authorize(ROLES.STAFF),
   caseController.getCaseById
 );
 
@@ -39,19 +40,20 @@ router.get(
  */
 router.get(
   '/number/:caseNumber',
-  authenticateJWT,
+  authenticate,
   caseController.getCaseByNumber
 );
 
 /**
  * @route POST /api/v1/cases
  * @desc Create a new case
- * @access Private (Student)
+ * @access Private (Staff, Manager)
  */
 router.post(
   '/',
-  authenticateJWT,
-  authorizePermission(PERMISSIONS.CASE_CREATE),
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.CASE_CREATE),
   validate(caseValidator.createCaseSchema),
   caseController.createCase
 );
@@ -59,13 +61,29 @@ router.post(
 /**
  * @route PUT /api/v1/cases/:id
  * @desc Update case
- * @access Private
+ * @access Private (Staff, Manager)
  */
 router.put(
   '/:id',
-  authenticateJWT,
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.CASE_UPDATE),
   validate(caseValidator.updateCaseSchema),
   caseController.updateCase
+);
+
+/**
+ * @route PATCH /api/v1/cases/:id/status
+ * @desc Update case status
+ * @access Private (Staff, Manager)
+ */
+router.patch(
+  '/:id/status',
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.CASE_UPDATE),
+  validate(caseValidator.updateStatusSchema),
+  caseController.updateStatus
 );
 
 /**
@@ -75,8 +93,9 @@ router.put(
  */
 router.post(
   '/:id/submit',
-  authenticateJWT,
-  authorizePermission(PERMISSIONS.CASE_SUBMIT),
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.CASE_SUBMIT),
   caseController.submitCase
 );
 
@@ -87,9 +106,9 @@ router.post(
  */
 router.post(
   '/:id/assign/:staffId',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
-  authorizePermission(PERMISSIONS.CASE_ASSIGN),
+  authenticate,
+  authorize(ROLES.MANAGER),
+  checkPermission(PERMISSIONS.CASE_ASSIGN),
   caseController.assignCase
 );
 
@@ -100,9 +119,9 @@ router.post(
  */
 router.post(
   '/:id/review/start',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
-  authorizePermission(PERMISSIONS.CASE_REVIEW),
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.CASE_REVIEW),
   caseController.startReview
 );
 
@@ -113,9 +132,9 @@ router.post(
  */
 router.post(
   '/:id/review/revision',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
-  authorizePermission(PERMISSIONS.CASE_REVIEW),
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.CASE_REVIEW),
   validate(caseValidator.revisionRequestSchema),
   caseController.requestRevision
 );
@@ -127,9 +146,9 @@ router.post(
  */
 router.post(
   '/:id/review/complete',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
-  authorizePermission(PERMISSIONS.CASE_REVIEW),
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.CASE_REVIEW),
   validate(caseValidator.evaluationSchema),
   caseController.completeReview
 );
@@ -141,7 +160,7 @@ router.post(
  */
 router.post(
   '/:id/attachments',
-  authenticateJWT,
+  authenticate,
   uploadMiddleware.single('attachment'),
   caseController.addAttachment
 );
@@ -153,18 +172,20 @@ router.post(
  */
 router.get(
   '/:id/report',
-  authenticateJWT,
+  authenticate,
   caseController.getCaseReport
 );
 
 /**
  * @route DELETE /api/v1/cases/:id
  * @desc Delete case
- * @access Private
+ * @access Private (Manager)
  */
 router.delete(
   '/:id',
-  authenticateJWT,
+  authenticate,
+  authorize(ROLES.MANAGER),
+  checkPermission(PERMISSIONS.CASE_DELETE),
   caseController.deleteCase
 );
 
@@ -175,8 +196,8 @@ router.delete(
  */
 router.get(
   '/student/:studentId',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
+  authenticate,
+  authorize(ROLES.STAFF),
   caseController.getCasesByStudent
 );
 
@@ -187,8 +208,8 @@ router.get(
  */
 router.get(
   '/staff/:staffId',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
+  authenticate,
+  authorize(ROLES.STAFF),
   caseController.getCasesByStaff
 );
 
@@ -199,8 +220,8 @@ router.get(
  */
 router.get(
   '/department/:departmentId',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   caseController.getCasesByDepartment
 );
 
@@ -211,20 +232,20 @@ router.get(
  */
 router.get(
   '/status/:status',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
+  authenticate,
+  authorize(ROLES.STAFF),
   caseController.getCasesByStatus
 );
 
 /**
  * @route GET /api/v1/cases/search
  * @desc Search cases
- * @access Private (Staff, Manager, Super Admin)
+ * @access Private (Staff, Manager)
  */
 router.get(
   '/search',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
+  authenticate,
+  authorize(ROLES.STAFF),
   caseController.searchCases
 );
 

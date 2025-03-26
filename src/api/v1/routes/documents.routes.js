@@ -4,7 +4,7 @@ const router = express.Router();
 const documentController = require('../controllers/documents.controller');
 const { validate } = require('../middleware/validator.middleware');
 const documentValidator = require('../validators/document.validator');
-const { authenticateJWT, authorizeRole, authorizePermission } = require('../middleware/auth.middleware');
+const { authenticate, authorize, checkPermission } = require('../middleware/auth.middleware');
 const { PERMISSIONS } = require('../../../constants/permissions.constants');
 const { ROLES } = require('../../../constants/roles.constants');
 const uploadMiddleware = require('../middleware/upload.middleware');
@@ -16,7 +16,7 @@ const uploadMiddleware = require('../middleware/upload.middleware');
  */
 router.get(
   '/',
-  authenticateJWT,
+  authenticate,
   documentController.getDocuments
 );
 
@@ -27,7 +27,7 @@ router.get(
  */
 router.get(
   '/:id',
-  authenticateJWT,
+  authenticate,
   documentController.getDocumentById
 );
 
@@ -38,20 +38,20 @@ router.get(
  */
 router.get(
   '/number/:documentNumber',
-  authenticateJWT,
+  authenticate,
   documentController.getDocumentByNumber
 );
 
 /**
  * @route POST /api/v1/documents
  * @desc Create a new document
- * @access Private (Staff, Manager, Super Admin)
+ * @access Private (Staff)
  */
 router.post(
   '/',
-  authenticateJWT,
-  authorizePermission(PERMISSIONS.DOCUMENT_CREATE),
-  uploadMiddleware.single('document'),
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.DOCUMENT_CREATE),
   validate(documentValidator.createDocumentSchema),
   documentController.createDocument
 );
@@ -59,11 +59,13 @@ router.post(
 /**
  * @route PUT /api/v1/documents/:id
  * @desc Update document
- * @access Private
+ * @access Private (Staff)
  */
 router.put(
   '/:id',
-  authenticateJWT,
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.DOCUMENT_UPDATE),
   validate(documentValidator.updateDocumentSchema),
   documentController.updateDocument
 );
@@ -75,7 +77,7 @@ router.put(
  */
 router.post(
   '/:id/file',
-  authenticateJWT,
+  authenticate,
   uploadMiddleware.single('document'),
   validate(documentValidator.updateFileSchema),
   documentController.updateDocumentFile
@@ -88,7 +90,7 @@ router.post(
  */
 router.get(
   '/:id/file',
-  authenticateJWT,
+  authenticate,
   documentController.getDocumentFile
 );
 
@@ -99,7 +101,7 @@ router.get(
  */
 router.get(
   '/:id/file/:version',
-  authenticateJWT,
+  authenticate,
   documentController.getDocumentFileByVersion
 );
 
@@ -110,8 +112,8 @@ router.get(
  */
 router.patch(
   '/:id/status',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
+  authenticate,
+  authorize(ROLES.STAFF),
   validate(documentValidator.updateStatusSchema),
   documentController.updateDocumentStatus
 );
@@ -119,11 +121,13 @@ router.patch(
 /**
  * @route DELETE /api/v1/documents/:id
  * @desc Delete document
- * @access Private
+ * @access Private (Staff)
  */
 router.delete(
   '/:id',
-  authenticateJWT,
+  authenticate,
+  authorize(ROLES.STAFF),
+  checkPermission(PERMISSIONS.DOCUMENT_DELETE),
   documentController.deleteDocument
 );
 
@@ -134,7 +138,7 @@ router.delete(
  */
 router.get(
   '/category/:category',
-  authenticateJWT,
+  authenticate,
   documentController.getDocumentsByCategory
 );
 
@@ -145,7 +149,7 @@ router.get(
  */
 router.get(
   '/author/:authorId',
-  authenticateJWT,
+  authenticate,
   documentController.getDocumentsByAuthor
 );
 
@@ -156,7 +160,7 @@ router.get(
  */
 router.get(
   '/department/:departmentId',
-  authenticateJWT,
+  authenticate,
   documentController.getDocumentsByDepartment
 );
 
@@ -167,7 +171,7 @@ router.get(
  */
 router.get(
   '/search',
-  authenticateJWT,
+  authenticate,
   documentController.searchDocuments
 );
 
@@ -178,7 +182,7 @@ router.get(
  */
 router.post(
   '/:id/share',
-  authenticateJWT,
+  authenticate,
   validate(documentValidator.shareDocumentSchema),
   documentController.shareDocument
 );

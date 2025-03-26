@@ -140,29 +140,36 @@ const updateCase = asyncHandler(async (req, res) => {
 });
 
 /**
- * Submit case for review
- * @route POST /api/v1/cases/:id/submit
+ * Update case status
+ * @route PATCH /api/v1/cases/:id/status
  */
-const submitCase = asyncHandler(async (req, res) => {
+const updateStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   objectId(id);
+  const { status } = req.body;
   
-  // Only students can submit their own cases
-  const studentId = req.user.id;
-  
-  // Check if it's the student's case
+  // Get case to check permissions
   const existingCase = await caseService.getCaseById(id);
   
-  if (existingCase.student.toString() !== studentId) {
-    throw AuthError.insufficientPermissions('You can only submit your own cases');
+  // Check if user has permission to update this case
+  const isStudent = req.user.role === 'student';
+  const isAssignedStaff = existingCase.assignedTo && 
+                        existingCase.assignedTo.toString() === req.user.id;
+  
+  if (isStudent && existingCase.student.toString() !== req.user.id) {
+    throw AuthError.insufficientPermissions('You do not have permission to update this case');
   }
   
-  const submittedCase = await caseService.submitCase(id, studentId);
+  if (req.user.role === 'staff' && !isAssignedStaff) {
+    throw AuthError.insufficientPermissions('You are not assigned to this case');
+  }
+  
+  const updatedCase = await caseService.updateCaseStatus(id, status, req.user.id);
   
   res.status(HTTP_STATUS.OK.code).json({
     success: true,
-    message: 'Case submitted for review successfully',
-    data: submittedCase
+    message: 'Case status updated successfully',
+    data: updatedCase
   });
 });
 
@@ -537,12 +544,40 @@ const searchCases = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Submit case for review
+ * @route POST /api/v1/cases/:id/submit
+ */
+const submitCase = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  objectId(id);
+  
+  // Only students can submit their own cases
+  const studentId = req.user.id;
+  
+  // Check if it's the student's case
+  const existingCase = await caseService.getCaseById(id);
+  
+  if (existingCase.student.toString() !== studentId) {
+    throw AuthError.insufficientPermissions('You can only submit your own cases');
+  }
+  
+  const submittedCase = await caseService.submitCase(id, studentId);
+  
+  res.status(HTTP_STATUS.OK.code).json({
+    success: true,
+    message: 'Case submitted for review successfully',
+    data: submittedCase
+  });
+});
+
 module.exports = {
   getCases,
   getCaseById,
   getCaseByNumber,
   createCase,
   updateCase,
+  updateStatus,
   submitCase,
   assignCase,
   startReview,
