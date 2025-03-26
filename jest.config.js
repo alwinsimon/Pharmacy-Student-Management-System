@@ -42,43 +42,57 @@ module.exports = {
   reporters: [
     'default',
     ['jest-junit', {
-      outputDirectory: '../reports',
+      outputDirectory: './reports',
       outputName: 'junit.xml',
       classNameTemplate: '{classname}',
-      titleTemplate: '{title}'
+      titleTemplate: '{title}',
+      ancestorSeparator: ' › ',
+      uniqueOutputName: 'false',
+      suiteNameTemplate: '{filepath}',
+      addFileAttribute: true
     }]
+  ],
+
+  // Setup files to run before each test
+  setupFilesAfterEnv: [
+    './tests/setup.js'
   ],
 
   // The maximum amount of workers used to run your tests
   maxWorkers: '50%',
 
-  // Setup files to run before each test
-  setupFilesAfterEnv: [
-    '../src/tests/setup.js'
-  ],
-
-  // A map from regular expressions to paths to transformers
-  transform: {
-    '^.+\\.js$': 'babel-jest'
-  },
-
-  // An array of regexp pattern strings that are matched against all source file paths
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1'
-  },
+  // Automatically clear mock calls and instances between every test
+  clearMocks: true,
 
   // Indicates whether each individual test should be reported during the run
   verbose: true,
 
-  // The maximum amount of time a test can run before timing out
+  // The directory where Jest should store its cached dependency information
+  cacheDirectory: '../node_modules/.cache/jest',
+
+  // Indicates whether the coverage information should be collected while executing the test
+  collectCoverageFrom: [
+    '**/*.js',
+    '!**/node_modules/**',
+    '!**/dist/**',
+    '!**/coverage/**',
+    '!**/__tests__/**',
+    '!**/tests/**'
+  ],
+
+  // The maximum amount of time (in milliseconds) a test is allowed to run before it is considered timed out
   testTimeout: 10000,
 
-  // Indicates whether the test environment should be reset between each test
-  resetMocks: true,
+  // Indicates whether each individual test should be reported during the run
+  silent: false,
 
-  // Indicates whether the test environment should be restored between each test
-  restoreMocks: true,
-
-  // Indicates whether the test environment should be cleared between each test
-  clearMocks: true
+  // Indicates whether the coverage information should be collected while executing the test
+  coverageThreshold: {
+    global: {
+      branches: 10,
+      functions: 10,
+      lines: 10,
+      statements: 10
+    }
+  }
 };

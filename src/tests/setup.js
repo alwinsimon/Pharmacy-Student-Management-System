@@ -50,6 +50,25 @@ const clearDB = async () => {
   }
 };
 
+// Set up database connection before all tests
+beforeAll(async () => {
+  // Set JWT secret for testing
+  process.env.JWT_SECRET = 'test-jwt-secret';
+  
+  // Connect to test database
+  await connectDB();
+});
+
+// Clear database after each test
+afterEach(async () => {
+  await clearDB();
+});
+
+// Close database connection after all tests
+afterAll(async () => {
+  await closeDB();
+});
+
 // Test utilities
 const testUtils = {
   // Create test user
