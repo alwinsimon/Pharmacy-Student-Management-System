@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="9" failures="2" errors="0" time="2.269">
+  <testsuite name="src/tests/auth.middleware.test.js" errors="0" failures="2" skipped="0" timestamp="2025-03-26T09:04:47" time="2.22" tests="9">
+    <testcase classname="Authentication Middleware › authenticate" name="should throw error if no token provided" time="0.013">
+    </testcase>
+    <testcase classname="Authentication Middleware › authenticate" name="should throw error if token is invalid" time="0.005">
+      <failure>Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+Expected: Any&lt;AuthenticationError&gt;
+Received: [TypeError: cache.get is not a function]
+
+Number of calls: 1
+    at Object.toHaveBeenCalledWith (/home/alwin/spaceX/psms-project/Pharmacy-Student-Management-System/src/tests/auth.middleware.test.js:32:20)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="Authentication Middleware › authenticate" name="should attach user to request if token is valid" time="0.124">
+      <failure>Error: expect(received).toBeDefined()
+
+Received: undefined
+    at Object.toBeDefined (/home/alwin/spaceX/psms-project/Pharmacy-Student-Management-System/src/tests/auth.middleware.test.js:44:24)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)</failure>
+    </testcase>
+    <testcase classname="Authentication Middleware › authorize" name="should throw error if user is not authenticated" time="0.003">
+    </testcase>
+    <testcase classname="Authentication Middleware › authorize" name="should throw error if user role is not authorized" time="0.002">
+    </testcase>
+    <testcase classname="Authentication Middleware › authorize" name="should allow access if user role is authorized" time="0.003">
+    </testcase>
+    <testcase classname="Authentication Middleware › checkPermission" name="should throw error if user is not authenticated" time="0.003">
+    </testcase>
+    <testcase classname="Authentication Middleware › checkPermission" name="should throw error if user does not have permission" time="0.002">
+    </testcase>
+    <testcase classname="Authentication Middleware › checkPermission" name="should allow access if user has permission" time="0.002">
+    </testcase>
+  </testsuite>
+</testsuites>
