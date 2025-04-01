@@ -37,6 +37,22 @@ const DEPARTMENT_STATUS = {
   INACTIVE: 'inactive'
 };
 
+// Notification statuses
+const NOTIFICATION_STATUS = {
+  UNREAD: 'unread',            // New notification
+  READ: 'read',                // Notification has been read
+  ARCHIVED: 'archived'         // Archived notification
+};
+
+// QR Code statuses
+const QRCODE_STATUS = {
+  ACTIVE: 'active',            // Active QR code
+  INACTIVE: 'inactive',        // Temporarily inactive
+  EXPIRED: 'expired',          // QR code has expired
+  USED: 'used',                // QR code has been used
+  ARCHIVED: 'archived'         // Archived QR code
+};
+
 // HTTP status codes with descriptions
 const HTTP_STATUS = {
   OK: { code: 200, message: 'Success' },
@@ -59,5 +75,7 @@ module.exports = {
   CASE_STATUS,
   DOCUMENT_STATUS,
   DEPARTMENT_STATUS,
+  NOTIFICATION_STATUS,
+  QRCODE_STATUS,
   HTTP_STATUS
 };

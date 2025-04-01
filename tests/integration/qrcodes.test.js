@@ -3,6 +3,7 @@ const app = require("../../src/app");
 const { createTestUser, generateTestToken } = require("../utils/test.utils");
 const { ROLES } = require("../../src/constants/roles.constants");
 const { USER_STATUS } = require("../../src/constants/status.constants");
+const { QRCODE_STATUS } = require("../../src/constants/status.constants");
 
 describe("QR Codes API", () => {
   let adminToken;
@@ -290,6 +291,270 @@ describe("QR Codes API", () => {
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(response.status).toBe(400);
+      expect(response.body.error).toBeDefined();
+    });
+  });
+
+  describe("POST /api/v1/qrcodes", () => {
+    it("should generate a new QR code (admin and teacher only)", async () => {
+      const qrcodeData = {
+        data: "Test QR Code Data",
+        type: "ATTENDANCE",
+        expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
+      };
+
+      // Test admin access
+      const adminResponse = await request(app)
+        .post("/api/v1/qrcodes")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(qrcodeData);
+
+      expect(adminResponse.status).toBe(201);
+      expect(adminResponse.body.success).toBe(true);
+      expect(adminResponse.body.data.data).toBe(qrcodeData.data);
+      expect(adminResponse.body.data.type).toBe(qrcodeData.type);
+      expect(adminResponse.body.data.status).toBe(QRCODE_STATUS.ACTIVE);
+      expect(adminResponse.body.data.qrCode).toBeDefined();
+
+      // Test teacher access
+      const teacherResponse = await request(app)
+        .post("/api/v1/qrcodes")
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send({
+          ...qrcodeData,
+          data: "Teacher QR Code Data",
+        });
+
+      expect(teacherResponse.status).toBe(201);
+      expect(teacherResponse.body.success).toBe(true);
+      expect(teacherResponse.body.data.data).toBe("Teacher QR Code Data");
+
+      // Test student access (should be denied)
+      const studentResponse = await request(app)
+        .post("/api/v1/qrcodes")
+        .set("Authorization", `Bearer ${studentToken}`)
+        .send(qrcodeData);
+
+      expect(studentResponse.status).toBe(403);
+      expect(studentResponse.body.error).toBeDefined();
+    });
+
+    it("should return 400 for invalid QR code data", async () => {
+      const invalidData = {
+        data: "", // Invalid empty data
+        type: "INVALID_TYPE", // Invalid type
+      };
+
+      const response = await request(app)
+        .post("/api/v1/qrcodes")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(invalidData);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBeDefined();
+    });
+  });
+
+  describe("GET /api/v1/qrcodes", () => {
+    it("should get all QR codes (admin and teacher only)", async () => {
+      // Create test QR codes
+      const qrcodes = [
+        {
+          data: "First QR Code",
+          type: "ATTENDANCE",
+          status: QRCODE_STATUS.ACTIVE,
+        },
+        {
+          data: "Second QR Code",
+          type: "DOCUMENT",
+          status: QRCODE_STATUS.INACTIVE,
+        },
+      ];
+
+      await Promise.all(
+        qrcodes.map((qrcode) =>
+          request(app)
+            .post("/api/v1/qrcodes")
+            .set("Authorization", `Bearer ${adminToken}`)
+            .send(qrcode)
+        )
+      );
+
+      // Test admin access
+      const adminResponse = await request(app)
+        .get("/api/v1/qrcodes")
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(adminResponse.status).toBe(200);
+      expect(adminResponse.body.success).toBe(true);
+      expect(Array.isArray(adminResponse.body.data.qrcodes)).toBe(true);
+      expect(adminResponse.body.data.pagination).toBeDefined();
+
+      // Test teacher access
+      const teacherResponse = await request(app)
+        .get("/api/v1/qrcodes")
+        .set("Authorization", `Bearer ${teacherToken}`);
+
+      expect(teacherResponse.status).toBe(200);
+      expect(teacherResponse.body.success).toBe(true);
+      expect(Array.isArray(teacherResponse.body.data.qrcodes)).toBe(true);
+
+      // Test student access (should be denied)
+      const studentResponse = await request(app)
+        .get("/api/v1/qrcodes")
+        .set("Authorization", `Bearer ${studentToken}`);
+
+      expect(studentResponse.status).toBe(403);
+      expect(studentResponse.body.error).toBeDefined();
+    });
+
+    it("should filter QR codes by status", async () => {
+      // Create test QR codes
+      const qrcodes = [
+        {
+          data: "Active QR Code",
+          type: "ATTENDANCE",
+          status: QRCODE_STATUS.ACTIVE,
+        },
+        {
+          data: "Inactive QR Code",
+          type: "DOCUMENT",
+          status: QRCODE_STATUS.INACTIVE,
+        },
+      ];
+
+      await Promise.all(
+        qrcodes.map((qrcode) =>
+          request(app)
+            .post("/api/v1/qrcodes")
+            .set("Authorization", `Bearer ${adminToken}`)
+            .send(qrcode)
+        )
+      );
+
+      // Test getting active QR codes
+      const activeResponse = await request(app)
+        .get("/api/v1/qrcodes?status=active")
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(activeResponse.status).toBe(200);
+      expect(activeResponse.body.success).toBe(true);
+      expect(
+        activeResponse.body.data.qrcodes.every(
+          (q) => q.status === QRCODE_STATUS.ACTIVE
+        )
+      ).toBe(true);
+
+      // Test getting inactive QR codes
+      const inactiveResponse = await request(app)
+        .get("/api/v1/qrcodes?status=inactive")
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(inactiveResponse.status).toBe(200);
+      expect(inactiveResponse.body.success).toBe(true);
+      expect(
+        inactiveResponse.body.data.qrcodes.every(
+          (q) => q.status === QRCODE_STATUS.INACTIVE
+        )
+      ).toBe(true);
+    });
+  });
+
+  describe("GET /api/v1/qrcodes/:id", () => {
+    it("should get QR code by ID (admin and teacher only)", async () => {
+      // Create a test QR code
+      const qrcodeData = {
+        data: "Test QR Code",
+        type: "ATTENDANCE",
+        status: QRCODE_STATUS.ACTIVE,
+      };
+
+      const createResponse = await request(app)
+        .post("/api/v1/qrcodes")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(qrcodeData);
+
+      const qrcodeId = createResponse.body.data.id;
+
+      // Test admin access
+      const adminResponse = await request(app)
+        .get(`/api/v1/qrcodes/${qrcodeId}`)
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(adminResponse.status).toBe(200);
+      expect(adminResponse.body.success).toBe(true);
+      expect(adminResponse.body.data.id).toBe(qrcodeId);
+
+      // Test teacher access
+      const teacherResponse = await request(app)
+        .get(`/api/v1/qrcodes/${qrcodeId}`)
+        .set("Authorization", `Bearer ${teacherToken}`);
+
+      expect(teacherResponse.status).toBe(200);
+      expect(teacherResponse.body.success).toBe(true);
+      expect(teacherResponse.body.data.id).toBe(qrcodeId);
+
+      // Test student access (should be denied)
+      const studentResponse = await request(app)
+        .get(`/api/v1/qrcodes/${qrcodeId}`)
+        .set("Authorization", `Bearer ${studentToken}`);
+
+      expect(studentResponse.status).toBe(403);
+      expect(studentResponse.body.error).toBeDefined();
+    });
+
+    it("should return 404 for non-existent QR code", async () => {
+      const response = await request(app)
+        .get("/api/v1/qrcodes/507f1f77bcf86cd799439011")
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(response.status).toBe(404);
+      expect(response.body.error).toBeDefined();
+    });
+  });
+
+  describe("PUT /api/v1/qrcodes/:id/status", () => {
+    it("should update QR code status (admin and teacher only)", async () => {
+      // Create a test QR code
+      const qrcodeData = {
+        data: "Test QR Code",
+        type: "ATTENDANCE",
+        status: QRCODE_STATUS.ACTIVE,
+      };
+
+      const createResponse = await request(app)
+        .post("/api/v1/qrcodes")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(qrcodeData);
+
+      const qrcodeId = createResponse.body.data.id;
+
+      // Test updating status to inactive
+      const response = await request(app)
+        .put(`/api/v1/qrcodes/${qrcodeId}/status`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({ status: QRCODE_STATUS.INACTIVE });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.status).toBe(QRCODE_STATUS.INACTIVE);
+
+      // Verify status update
+      const getResponse = await request(app)
+        .get(`/api/v1/qrcodes/${qrcodeId}`)
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(getResponse.status).toBe(200);
+      expect(getResponse.body.data.status).toBe(QRCODE_STATUS.INACTIVE);
+    });
+
+    it("should return 404 for non-existent QR code", async () => {
+      const response = await request(app)
+        .put("/api/v1/qrcodes/507f1f77bcf86cd799439011/status")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({ status: QRCODE_STATUS.INACTIVE });
+
+      expect(response.status).toBe(404);
       expect(response.body.error).toBeDefined();
     });
   });
