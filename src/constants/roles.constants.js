@@ -1,33 +1,55 @@
 // src/constants/roles.constants.js
 /**
  * User role definitions
- * Implements the four-tier hierarchical user system
+ * Implements the three-tier hierarchical user system
  */
 const ROLES = {
-  SUPER_ADMIN: 'super_admin',
-  MANAGER: 'manager',
-  STAFF: 'staff',
-  STUDENT: 'student'
+  ADMIN: 'admin',           // System administrator
+  TEACHER: 'teacher',       // Faculty member
+  STUDENT: 'student'        // Student user
 };
 
 // Role hierarchy for authorization checks
 const ROLE_HIERARCHY = {
-  [ROLES.SUPER_ADMIN]: [ROLES.SUPER_ADMIN, ROLES.MANAGER, ROLES.STAFF, ROLES.STUDENT],
-  [ROLES.MANAGER]: [ROLES.MANAGER, ROLES.STAFF, ROLES.STUDENT],
-  [ROLES.STAFF]: [ROLES.STAFF, ROLES.STUDENT],
+  [ROLES.ADMIN]: [ROLES.ADMIN, ROLES.TEACHER, ROLES.STUDENT],
+  [ROLES.TEACHER]: [ROLES.TEACHER, ROLES.STUDENT],
   [ROLES.STUDENT]: [ROLES.STUDENT]
 };
 
 // Role label mapping for UI display
 const ROLE_LABELS = {
-  [ROLES.SUPER_ADMIN]: 'Super Admin',
-  [ROLES.MANAGER]: 'Department Manager',
-  [ROLES.STAFF]: 'Faculty Staff',
+  [ROLES.ADMIN]: 'Administrator',
+  [ROLES.TEACHER]: 'Teacher',
   [ROLES.STUDENT]: 'Student'
+};
+
+// Role permissions mapping
+const ROLE_PERMISSIONS = {
+  [ROLES.ADMIN]: [
+    'manage_users',
+    'manage_cases',
+    'manage_documents',
+    'manage_departments',
+    'view_dashboard',
+    'view_logs',
+    'manage_notifications'
+  ],
+  [ROLES.TEACHER]: [
+    'manage_cases',
+    'manage_documents',
+    'view_dashboard',
+    'view_notifications'
+  ],
+  [ROLES.STUDENT]: [
+    'view_cases',
+    'view_documents',
+    'view_notifications'
+  ]
 };
 
 module.exports = {
   ROLES,
   ROLE_HIERARCHY,
-  ROLE_LABELS
+  ROLE_LABELS,
+  ROLE_PERMISSIONS
 };

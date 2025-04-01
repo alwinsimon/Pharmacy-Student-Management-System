@@ -4,13 +4,14 @@ const { createTestUser, generateTestToken } = require("../utils/test.utils");
 const { ROLES } = require("../../src/constants/roles.constants");
 const { USER_STATUS } = require("../../src/constants/status.constants");
 
-describe("Documents Management API", () => {
+describe("Report Management API", () => {
   let adminToken;
   let teacherToken;
   let studentToken;
   let adminUser;
   let teacherUser;
   let studentUser;
+  let testCourse;
 
   beforeEach(async () => {
     // Create admin user
@@ -56,32 +57,49 @@ describe("Documents Management API", () => {
     adminToken = adminLogin.body.data.accessToken;
     teacherToken = teacherLogin.body.data.accessToken;
     studentToken = studentLogin.body.data.accessToken;
+
+    // Create a test course
+    const courseData = {
+      name: "Test Course",
+      code: "PHM101",
+      description: "Test course description",
+      credits: 3,
+      department: "Pharmacy",
+      semester: 1,
+    };
+
+    const courseResponse = await request(app)
+      .post("/api/v1/courses")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(courseData);
+
+    testCourse = courseResponse.body.data;
   });
 
-  describe("GET /api/v1/documents", () => {
-    it("should get all documents (admin and teacher only)", async () => {
-      // Create a test document
-      const documentData = {
-        title: "Test Document",
-        description: "Test document description",
-        type: "PDF",
-        category: "ACADEMIC",
-        uploadedBy: adminUser.id,
-        fileUrl: "https://example.com/test.pdf",
-        metadata: {
-          courseId: "123",
-          semester: 1,
+  describe("GET /api/v1/reports", () => {
+    it("should get all reports (admin and teacher only)", async () => {
+      // Create a test report
+      const reportData = {
+        title: "Test Report",
+        description: "Test report description",
+        type: "ACADEMIC",
+        courseId: testCourse.id,
+        data: {
+          attendance: 85,
+          grades: 78,
+          participation: 90,
         },
+        generatedBy: adminUser.id,
       };
 
       await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${adminToken}`)
-        .send(documentData);
+        .send(reportData);
 
       // Test admin access
       const adminResponse = await request(app)
-        .get("/api/v1/documents")
+        .get("/api/v1/reports")
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(adminResponse.status).toBe(200);
@@ -90,7 +108,7 @@ describe("Documents Management API", () => {
 
       // Test teacher access
       const teacherResponse = await request(app)
-        .get("/api/v1/documents")
+        .get("/api/v1/reports")
         .set("Authorization", `Bearer ${teacherToken}`);
 
       expect(teacherResponse.status).toBe(200);
@@ -99,7 +117,7 @@ describe("Documents Management API", () => {
 
       // Test student access (should be denied)
       const studentResponse = await request(app)
-        .get("/api/v1/documents")
+        .get("/api/v1/reports")
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(studentResponse.status).toBe(403);
@@ -107,60 +125,60 @@ describe("Documents Management API", () => {
     });
   });
 
-  describe("GET /api/v1/documents/:id", () => {
-    it("should get document by ID (admin, teacher, and student)", async () => {
-      // Create a test document
-      const documentData = {
-        title: "Test Document",
-        description: "Test document description",
-        type: "PDF",
-        category: "ACADEMIC",
-        uploadedBy: adminUser.id,
-        fileUrl: "https://example.com/test.pdf",
-        metadata: {
-          courseId: "123",
-          semester: 1,
+  describe("GET /api/v1/reports/:id", () => {
+    it("should get report by ID (admin, teacher, and student)", async () => {
+      // Create a test report
+      const reportData = {
+        title: "Test Report",
+        description: "Test report description",
+        type: "ACADEMIC",
+        courseId: testCourse.id,
+        data: {
+          attendance: 85,
+          grades: 78,
+          participation: 90,
         },
+        generatedBy: adminUser.id,
       };
 
       const createResponse = await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${adminToken}`)
-        .send(documentData);
+        .send(reportData);
 
-      const documentId = createResponse.body.data.id;
+      const reportId = createResponse.body.data.id;
 
       // Test admin access
       const adminResponse = await request(app)
-        .get(`/api/v1/documents/${documentId}`)
+        .get(`/api/v1/reports/${reportId}`)
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(adminResponse.status).toBe(200);
       expect(adminResponse.body.success).toBe(true);
-      expect(adminResponse.body.data.id).toBe(documentId);
+      expect(adminResponse.body.data.id).toBe(reportId);
 
       // Test teacher access
       const teacherResponse = await request(app)
-        .get(`/api/v1/documents/${documentId}`)
+        .get(`/api/v1/reports/${reportId}`)
         .set("Authorization", `Bearer ${teacherToken}`);
 
       expect(teacherResponse.status).toBe(200);
       expect(teacherResponse.body.success).toBe(true);
-      expect(teacherResponse.body.data.id).toBe(documentId);
+      expect(teacherResponse.body.data.id).toBe(reportId);
 
       // Test student access
       const studentResponse = await request(app)
-        .get(`/api/v1/documents/${documentId}`)
+        .get(`/api/v1/reports/${reportId}`)
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(studentResponse.status).toBe(200);
       expect(studentResponse.body.success).toBe(true);
-      expect(studentResponse.body.data.id).toBe(documentId);
+      expect(studentResponse.body.data.id).toBe(reportId);
     });
 
-    it("should return 404 for non-existent document", async () => {
+    it("should return 404 for non-existent report", async () => {
       const response = await request(app)
-        .get("/api/v1/documents/507f1f77bcf86cd799439011")
+        .get("/api/v1/reports/507f1f77bcf86cd799439011")
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(response.status).toBe(404);
@@ -168,134 +186,146 @@ describe("Documents Management API", () => {
     });
   });
 
-  describe("POST /api/v1/documents", () => {
-    it("should create new document (admin and teacher only)", async () => {
-      const documentData = {
-        title: "New Document",
-        description: "New document description",
-        type: "PDF",
-        category: "ACADEMIC",
-        fileUrl: "https://example.com/new.pdf",
+  describe("POST /api/v1/reports", () => {
+    it("should create new report (admin and teacher only)", async () => {
+      const reportData = {
+        title: "New Report",
+        description: "New report description",
+        type: "ACADEMIC",
+        courseId: testCourse.id,
+        data: {
+          attendance: 85,
+          grades: 78,
+          participation: 90,
+        },
+        generatedBy: adminUser.id,
         metadata: {
-          courseId: "123",
-          semester: 1,
+          semester: "2024-1",
+          academicYear: "2024",
         },
       };
 
       // Test admin access
       const adminResponse = await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${adminToken}`)
-        .send(documentData);
+        .send(reportData);
 
       expect(adminResponse.status).toBe(201);
       expect(adminResponse.body.success).toBe(true);
-      expect(adminResponse.body.data.title).toBe(documentData.title);
-      expect(adminResponse.body.data.type).toBe(documentData.type);
-      expect(adminResponse.body.data.category).toBe(documentData.category);
+      expect(adminResponse.body.data.title).toBe(reportData.title);
+      expect(adminResponse.body.data.courseId).toBe(reportData.courseId);
+      expect(adminResponse.body.data.type).toBe(reportData.type);
 
       // Test teacher access
       const teacherResponse = await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${teacherToken}`)
         .send({
-          ...documentData,
-          title: "Teacher Document",
+          ...reportData,
+          title: "Teacher Report",
+          generatedBy: teacherUser.id,
         });
 
       expect(teacherResponse.status).toBe(201);
       expect(teacherResponse.body.success).toBe(true);
-      expect(teacherResponse.body.data.title).toBe("Teacher Document");
+      expect(teacherResponse.body.data.title).toBe("Teacher Report");
+      expect(teacherResponse.body.data.generatedBy).toBe(teacherUser.id);
 
       // Test student access (should be denied)
       const studentResponse = await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${studentToken}`)
-        .send(documentData);
+        .send(reportData);
 
       expect(studentResponse.status).toBe(403);
       expect(studentResponse.body.error).toBeDefined();
     });
 
-    it("should return 400 for invalid document data", async () => {
-      const invalidDocumentData = {
+    it("should return 400 for invalid report data", async () => {
+      const invalidReportData = {
         title: "", // Invalid empty title
         type: "INVALID_TYPE", // Invalid type
-        category: "INVALID_CATEGORY", // Invalid category
-        fileUrl: "invalid-url", // Invalid URL
+        courseId: testCourse.id,
+        data: {}, // Invalid empty data
       };
 
       const response = await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${adminToken}`)
-        .send(invalidDocumentData);
+        .send(invalidReportData);
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBeDefined();
     });
   });
 
-  describe("PUT /api/v1/documents/:id", () => {
-    it("should update document (admin and teacher only)", async () => {
-      // Create a test document
-      const documentData = {
-        title: "Update Document",
-        description: "Update document description",
-        type: "PDF",
-        category: "ACADEMIC",
-        uploadedBy: adminUser.id,
-        fileUrl: "https://example.com/update.pdf",
-        metadata: {
-          courseId: "123",
-          semester: 1,
+  describe("PUT /api/v1/reports/:id", () => {
+    it("should update report (admin and teacher only)", async () => {
+      // Create a test report
+      const reportData = {
+        title: "Update Report",
+        description: "Update report description",
+        type: "ACADEMIC",
+        courseId: testCourse.id,
+        data: {
+          attendance: 85,
+          grades: 78,
+          participation: 90,
         },
+        generatedBy: adminUser.id,
       };
 
       const createResponse = await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${adminToken}`)
-        .send(documentData);
+        .send(reportData);
 
-      const documentId = createResponse.body.data.id;
+      const reportId = createResponse.body.data.id;
 
       const updateData = {
-        title: "Updated Document",
-        description: "Updated document description",
-        category: "RESEARCH",
+        title: "Updated Report",
+        description: "Updated report description",
+        type: "PERFORMANCE",
+        data: {
+          attendance: 90,
+          grades: 85,
+          participation: 95,
+        },
         metadata: {
-          courseId: "456",
-          semester: 2,
+          semester: "2024-2",
+          academicYear: "2024",
         },
       };
 
       // Test admin access
       const adminResponse = await request(app)
-        .put(`/api/v1/documents/${documentId}`)
+        .put(`/api/v1/reports/${reportId}`)
         .set("Authorization", `Bearer ${adminToken}`)
         .send(updateData);
 
       expect(adminResponse.status).toBe(200);
       expect(adminResponse.body.success).toBe(true);
       expect(adminResponse.body.data.title).toBe(updateData.title);
-      expect(adminResponse.body.data.category).toBe(updateData.category);
-      expect(adminResponse.body.data.metadata).toEqual(updateData.metadata);
+      expect(adminResponse.body.data.type).toBe(updateData.type);
+      expect(adminResponse.body.data.data).toEqual(updateData.data);
 
       // Test teacher access
       const teacherResponse = await request(app)
-        .put(`/api/v1/documents/${documentId}`)
+        .put(`/api/v1/reports/${reportId}`)
         .set("Authorization", `Bearer ${teacherToken}`)
         .send({
           ...updateData,
-          title: "Teacher Updated Document",
+          title: "Teacher Updated Report",
         });
 
       expect(teacherResponse.status).toBe(200);
       expect(teacherResponse.body.success).toBe(true);
-      expect(teacherResponse.body.data.title).toBe("Teacher Updated Document");
+      expect(teacherResponse.body.data.title).toBe("Teacher Updated Report");
 
       // Test student access (should be denied)
       const studentResponse = await request(app)
-        .put(`/api/v1/documents/${documentId}`)
+        .put(`/api/v1/reports/${reportId}`)
         .set("Authorization", `Bearer ${studentToken}`)
         .send(updateData);
 
@@ -304,51 +334,52 @@ describe("Documents Management API", () => {
     });
   });
 
-  describe("DELETE /api/v1/documents/:id", () => {
-    it("should delete document (admin and teacher only)", async () => {
-      // Create a test document
-      const documentData = {
-        title: "Delete Document",
-        description: "Delete document description",
-        type: "PDF",
-        category: "ACADEMIC",
-        uploadedBy: adminUser.id,
-        fileUrl: "https://example.com/delete.pdf",
-        metadata: {
-          courseId: "123",
-          semester: 1,
+  describe("DELETE /api/v1/reports/:id", () => {
+    it("should delete report (admin and teacher only)", async () => {
+      // Create a test report
+      const reportData = {
+        title: "Delete Report",
+        description: "Delete report description",
+        type: "ACADEMIC",
+        courseId: testCourse.id,
+        data: {
+          attendance: 85,
+          grades: 78,
+          participation: 90,
         },
+        generatedBy: adminUser.id,
       };
 
       const createResponse = await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${adminToken}`)
-        .send(documentData);
+        .send(reportData);
 
-      const documentId = createResponse.body.data.id;
+      const reportId = createResponse.body.data.id;
 
       // Test admin access
       const adminResponse = await request(app)
-        .delete(`/api/v1/documents/${documentId}`)
+        .delete(`/api/v1/reports/${reportId}`)
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(adminResponse.status).toBe(200);
       expect(adminResponse.body.success).toBe(true);
 
-      // Create another test document for teacher test
+      // Create another test report for teacher test
       const createResponse2 = await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${teacherToken}`)
         .send({
-          ...documentData,
-          title: "Teacher Delete Document",
+          ...reportData,
+          title: "Teacher Delete Report",
+          generatedBy: teacherUser.id,
         });
 
-      const documentId2 = createResponse2.body.data.id;
+      const reportId2 = createResponse2.body.data.id;
 
       // Test teacher access
       const teacherResponse = await request(app)
-        .delete(`/api/v1/documents/${documentId2}`)
+        .delete(`/api/v1/reports/${reportId2}`)
         .set("Authorization", `Bearer ${teacherToken}`);
 
       expect(teacherResponse.status).toBe(200);
@@ -356,7 +387,7 @@ describe("Documents Management API", () => {
 
       // Test student access (should be denied)
       const studentResponse = await request(app)
-        .delete(`/api/v1/documents/${documentId}`)
+        .delete(`/api/v1/reports/${reportId}`)
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(studentResponse.status).toBe(403);
@@ -364,42 +395,39 @@ describe("Documents Management API", () => {
     });
   });
 
-  describe("GET /api/v1/documents/category/:category", () => {
-    it("should get documents by category (admin, teacher, and student)", async () => {
-      const category = "ACADEMIC";
-
-      // Create test documents
-      const documentData = {
-        title: "Category Document",
-        description: "Category document description",
-        type: "PDF",
-        category: category,
-        uploadedBy: adminUser.id,
-        fileUrl: "https://example.com/category.pdf",
-        metadata: {
-          courseId: "123",
-          semester: 1,
+  describe("GET /api/v1/reports/course/:courseId", () => {
+    it("should get course reports (admin, teacher, and student)", async () => {
+      // Create test reports
+      const reportData = {
+        title: "Course Report",
+        description: "Course report description",
+        type: "ACADEMIC",
+        courseId: testCourse.id,
+        data: {
+          attendance: 85,
+          grades: 78,
+          participation: 90,
         },
+        generatedBy: adminUser.id,
       };
 
       await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${adminToken}`)
-        .send(documentData);
+        .send(reportData);
 
       // Test admin access
       const adminResponse = await request(app)
-        .get(`/api/v1/documents/category/${category}`)
+        .get(`/api/v1/reports/course/${testCourse.id}`)
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(adminResponse.status).toBe(200);
       expect(adminResponse.body.success).toBe(true);
       expect(Array.isArray(adminResponse.body.data)).toBe(true);
-      expect(adminResponse.body.data[0].category).toBe(category);
 
       // Test teacher access
       const teacherResponse = await request(app)
-        .get(`/api/v1/documents/category/${category}`)
+        .get(`/api/v1/reports/course/${testCourse.id}`)
         .set("Authorization", `Bearer ${teacherToken}`);
 
       expect(teacherResponse.status).toBe(200);
@@ -408,7 +436,7 @@ describe("Documents Management API", () => {
 
       // Test student access
       const studentResponse = await request(app)
-        .get(`/api/v1/documents/category/${category}`)
+        .get(`/api/v1/reports/course/${testCourse.id}`)
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(studentResponse.status).toBe(200);
@@ -417,56 +445,62 @@ describe("Documents Management API", () => {
     });
   });
 
-  describe("GET /api/v1/documents/search", () => {
-    it("should search documents (admin, teacher, and student)", async () => {
-      const searchQuery = "test";
-
-      // Create test documents
-      const documentData = {
-        title: "Test Search Document",
-        description: "Test search document description",
-        type: "PDF",
-        category: "ACADEMIC",
-        uploadedBy: adminUser.id,
-        fileUrl: "https://example.com/search.pdf",
-        metadata: {
-          courseId: "123",
-          semester: 1,
+  describe("GET /api/v1/reports/student/:studentId", () => {
+    it("should get student reports (admin, teacher, and student)", async () => {
+      // Create test reports
+      const reportData = {
+        title: "Student Report",
+        description: "Student report description",
+        type: "ACADEMIC",
+        courseId: testCourse.id,
+        data: {
+          attendance: 85,
+          grades: 78,
+          participation: 90,
         },
+        generatedBy: adminUser.id,
+        studentId: studentUser.id,
       };
 
       await request(app)
-        .post("/api/v1/documents")
+        .post("/api/v1/reports")
         .set("Authorization", `Bearer ${adminToken}`)
-        .send(documentData);
+        .send(reportData);
 
       // Test admin access
       const adminResponse = await request(app)
-        .get(`/api/v1/documents/search?q=${searchQuery}`)
+        .get(`/api/v1/reports/student/${studentUser.id}`)
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(adminResponse.status).toBe(200);
       expect(adminResponse.body.success).toBe(true);
       expect(Array.isArray(adminResponse.body.data)).toBe(true);
-      expect(adminResponse.body.data[0].title).toContain(searchQuery);
 
       // Test teacher access
       const teacherResponse = await request(app)
-        .get(`/api/v1/documents/search?q=${searchQuery}`)
+        .get(`/api/v1/reports/student/${studentUser.id}`)
         .set("Authorization", `Bearer ${teacherToken}`);
 
       expect(teacherResponse.status).toBe(200);
       expect(teacherResponse.body.success).toBe(true);
       expect(Array.isArray(teacherResponse.body.data)).toBe(true);
 
-      // Test student access
+      // Test student access (own reports)
       const studentResponse = await request(app)
-        .get(`/api/v1/documents/search?q=${searchQuery}`)
+        .get(`/api/v1/reports/student/${studentUser.id}`)
         .set("Authorization", `Bearer ${studentToken}`);
 
       expect(studentResponse.status).toBe(200);
       expect(studentResponse.body.success).toBe(true);
       expect(Array.isArray(studentResponse.body.data)).toBe(true);
+
+      // Test student access (other student's reports - should be denied)
+      const otherStudentResponse = await request(app)
+        .get(`/api/v1/reports/student/${adminUser.id}`)
+        .set("Authorization", `Bearer ${studentToken}`);
+
+      expect(otherStudentResponse.status).toBe(403);
+      expect(otherStudentResponse.body.error).toBeDefined();
     });
   });
 });

@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const dashboardController = require('../controllers/dashboard.controller');
-const { authenticateJWT, authorizeRole } = require('../middleware/auth.middleware');
+const { authenticate, authorize } = require('../middleware/auth.middleware');
 const { ROLES } = require('../../../constants/roles.constants');
 
 /**
@@ -12,8 +12,8 @@ const { ROLES } = require('../../../constants/roles.constants');
  */
 router.get(
   '/system',
-  authenticateJWT,
-  authorizeRole(ROLES.SUPER_ADMIN),
+  authenticate,
+  authorize(ROLES.SUPER_ADMIN),
   dashboardController.getSystemStats
 );
 
@@ -24,8 +24,8 @@ router.get(
  */
 router.get(
   '/department/:departmentId',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   dashboardController.getDepartmentStats
 );
 
@@ -36,8 +36,8 @@ router.get(
  */
 router.get(
   '/staff',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
+  authenticate,
+  authorize(ROLES.STAFF),
   dashboardController.getStaffStats
 );
 
@@ -48,8 +48,8 @@ router.get(
  */
 router.get(
   '/student',
-  authenticateJWT,
-  authorizeRole(ROLES.STUDENT),
+  authenticate,
+  authorize(ROLES.STUDENT),
   dashboardController.getStudentStats
 );
 
@@ -60,8 +60,8 @@ router.get(
  */
 router.get(
   '/analytics/case-completion',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
+  authenticate,
+  authorize(ROLES.STAFF),
   dashboardController.getCaseCompletionStats
 );
 
@@ -72,8 +72,8 @@ router.get(
  */
 router.get(
   '/analytics/document-usage',
-  authenticateJWT,
-  authorizeRole(ROLES.STAFF),
+  authenticate,
+  authorize(ROLES.STAFF),
   dashboardController.getDocumentUsageStats
 );
 

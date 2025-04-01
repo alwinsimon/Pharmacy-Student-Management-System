@@ -150,9 +150,18 @@ const evaluationSchema = Joi.object({
   ).optional()
 });
 
+// Update status validation schema
+const updateStatusSchema = Joi.object({
+  status: Joi.string().valid(...Object.values(CASE_STATUS)).required().messages({
+    'any.required': 'Status is required',
+    'string.valid': 'Invalid status value'
+  })
+});
+
 module.exports = {
   createCaseSchema,
   updateCaseSchema,
   revisionRequestSchema,
-  evaluationSchema
+  evaluationSchema,
+  updateStatusSchema
 };

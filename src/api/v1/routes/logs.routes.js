@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const logController = require('../controllers/logs.controller');
-const { authenticateJWT, authorizeRole } = require('../middleware/auth.middleware');
+const { authenticate, authorize } = require('../middleware/auth.middleware');
 const { ROLES } = require('../../../constants/roles.constants');
 
 /**
@@ -11,8 +11,8 @@ const { ROLES } = require('../../../constants/roles.constants');
  */
 router.get(
   '/',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   logController.getLogs
 );
 
@@ -23,8 +23,8 @@ router.get(
  */
 router.get(
   '/:id',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   logController.getLogById
 );
 
@@ -35,8 +35,8 @@ router.get(
  */
 router.get(
   '/user/:userId',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   logController.getLogsByUser
 );
 
@@ -47,8 +47,8 @@ router.get(
  */
 router.get(
   '/entity/:entity/:entityId',
-  authenticateJWT,
-  authorizeRole(ROLES.MANAGER),
+  authenticate,
+  authorize(ROLES.MANAGER),
   logController.getLogsByEntity
 );
 
