@@ -46,7 +46,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import { setUser, clearUser } from './features/auth/authSlice';
 import { initializeSocket } from './services/socketService';
 import jwtDecode from 'jwt-decode';
-import { STORAGE_KEYS } from './utils/constants';
+import { STORAGE_KEYS, APP_INFO } from './utils/constants';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -86,6 +86,18 @@ const App = () => {
   
   // Determine if current route is public
   const isPublicRoute = ['/login', '/register', '/'].includes(location.pathname);
+  
+  // Update page title based on current route
+  useEffect(() => {
+    const pageName = location.pathname.split('/').pop();
+    const formattedPageName = pageName 
+      ? pageName.charAt(0).toUpperCase() + pageName.slice(1)
+      : 'Home';
+    
+    document.title = isPublicRoute
+      ? APP_INFO.NAME
+      : `${formattedPageName} | ${APP_INFO.NAME}`;
+  }, [location.pathname, isPublicRoute]);
   
   return (
     <ThemeProvider>

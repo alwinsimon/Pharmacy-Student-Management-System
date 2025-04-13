@@ -45,7 +45,7 @@ import {
 } from '@mui/icons-material';
 import { toggleDarkMode } from '../features/ui/uiSlice';
 import { logout } from '../features/auth/authSlice';
-import { APP_INFO, NAVIGATION } from '../utils/constants';
+import { APP_INFO, NAVIGATION, THEME_SETTINGS } from '../utils/constants';
 
 const Header = () => {
   const theme = useTheme();
@@ -140,6 +140,14 @@ const Header = () => {
       <Divider />
       
       <List sx={{ flexGrow: 1 }}>
+        {/* Add Home link for all users */}
+        <ListItem disablePadding>
+          <ListItemButton onClick={() => handleNavigate('/')}>
+            <ListItemIcon><Dashboard /></ListItemIcon>
+            <ListItemText primary="Home" />
+          </ListItemButton>
+        </ListItem>
+        
         {mainNavItems.map((item) => (
           <ListItem key={item.id} disablePadding>
             <ListItemButton onClick={() => handleNavigate(item.path)}>
@@ -161,7 +169,7 @@ const Header = () => {
               color="primary"
             />
           }
-          label={darkMode ? "Dark Mode" : "Light Mode"}
+          label={darkMode ? THEME_SETTINGS.DARK.label : THEME_SETTINGS.LIGHT.label}
         />
       </Box>
       
@@ -187,7 +195,19 @@ const Header = () => {
 
   return (
     <>
-      <AppBar position="fixed" color="default" elevation={0} sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+      <AppBar 
+        position="fixed" 
+        color="default" 
+        elevation={0} 
+        sx={{ 
+          zIndex: theme.zIndex.drawer + 1,
+          backdropFilter: 'blur(20px)',
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? 'rgba(26, 26, 26, 0.8)' 
+            : 'rgba(255, 255, 255, 0.8)',
+          borderBottom: `1px solid ${theme.palette.divider}`
+        }}
+      >
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             {/* Logo and title */}
@@ -229,6 +249,19 @@ const Header = () => {
               {APP_INFO.NAME}
             </Typography>
 
+            {/* Home link for desktop */}
+            <Button
+              onClick={() => handleNavigate('/')}
+              sx={{ 
+                my: 2, 
+                color: 'text.primary', 
+                display: { xs: 'none', md: 'flex' }, 
+                mr: 1 
+              }}
+            >
+              Home
+            </Button>
+
             {/* Desktop navigation */}
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               {user && mainNavItems.map((item) => (
@@ -252,7 +285,7 @@ const Header = () => {
             {/* Right side icons */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {/* Theme toggle */}
-              <Tooltip title={darkMode ? "Switch to light mode" : "Switch to dark mode"}>
+              <Tooltip title={darkMode ? THEME_SETTINGS.LIGHT.label : THEME_SETTINGS.DARK.label}>
                 <IconButton sx={{ ml: 1 }} onClick={handleThemeToggle} color="inherit">
                   {darkMode ? <LightMode /> : <DarkMode />}
                 </IconButton>

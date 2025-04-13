@@ -10,6 +10,11 @@ import App from './App';
 import { store } from './app/store';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
+import { APP_INFO } from './utils/constants';
+
+// Log application information
+console.log(`%c${APP_INFO.NAME} v${APP_INFO.VERSION}`, 'font-weight: bold; font-size: 16px; color: #3f51b5;');
+console.log(`${APP_INFO.DESCRIPTION}`);
 
 // Create a root element for React 18
 const root = ReactDOM.createRoot(document.getElementById('root'));

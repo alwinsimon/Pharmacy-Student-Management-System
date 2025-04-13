@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Typography, Breadcrumbs, Link, useTheme } from '@mui/material';
+import { Box, Container, Typography, Breadcrumbs, Link } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { Home as HomeIcon } from '@mui/icons-material';
 
@@ -22,7 +22,6 @@ const PageLayout = ({
   maxWidth = 'lg',
   sx = {}
 }) => {
-  const theme = useTheme();
   const location = useLocation();
   
   // Generate path segments for breadcrumbs if not provided

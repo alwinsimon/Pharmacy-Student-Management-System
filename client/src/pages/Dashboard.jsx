@@ -1,382 +1,493 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Box,
-  Grid,
-  Paper,
-  Typography,
   Button,
+  Grid,
+  Typography,
+  Avatar,
   Divider,
   List,
   ListItem,
-  ListItemText,
   ListItemAvatar,
-  Avatar,
-  CircularProgress,
-  Card,
-  CardContent,
-  CardHeader,
-  IconButton
+  ListItemText,
+  ListItemButton,
+  Chip,
+  LinearProgress,
+  useTheme
 } from '@mui/material';
 import {
+  Add,
   Assignment,
   QuestionAnswer,
   Quiz,
-  MoreVert,
-  TrendingUp,
-  Timeline,
-  NotificationsActive
+  ArrowForward,
+  Notifications,
+  CalendarToday,
+  TrendingUp
 } from '@mui/icons-material';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js';
-import { Pie, Line } from 'react-chartjs-2';
+import { USER_ROLES } from '../utils/constants';
+import CustomCard from '../components/CustomCard';
+import PageLayout from '../components/PageLayout';
 
-// Register ChartJS components
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement);
+// Mock data
+const recentCases = [
+  { id: 1, title: 'Hypertension Case Study', status: 'in review', updatedAt: '2023-05-15T10:30:00Z' },
+  { id: 2, title: 'Diabetes Management', status: 'completed', updatedAt: '2023-05-10T14:20:00Z' },
+  { id: 3, title: 'Asthma Exacerbation', status: 'submitted', updatedAt: '2023-05-08T09:15:00Z' },
+];
+
+const recentQueries = [
+  { id: 1, title: 'Antibiotic Selection for UTI', status: 'responded', updatedAt: '2023-05-14T16:45:00Z' },
+  { id: 2, title: 'Warfarin Dosing Protocol', status: 'assigned', updatedAt: '2023-05-12T11:30:00Z' },
+];
+
+const upcomingTests = [
+  { id: 1, title: 'Pharmacokinetics Assessment', scheduledFor: '2023-05-20T14:00:00Z', timeLimit: 60 },
+  { id: 2, title: 'Clinical Therapeutics Quiz', scheduledFor: '2023-05-25T10:00:00Z', timeLimit: 45 },
+];
 
 const Dashboard = () => {
-  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Mock data - in a real app, this would come from API
-  const [stats, setStats] = useState({
-    cases: { total: 0, pending: 0, completed: 0, grade: 0 },
-    queries: { total: 0, pending: 0, completed: 0, grade: 0 },
-    tests: { total: 0, pending: 0, completed: 0, grade: 0 },
+  const theme = useTheme();
+  const { user } = useSelector(state => state.auth);
+  const [stats] = useState({
+    casesCount: 12,
+    queriesCount: 8,
+    testsCount: 5,
+    completedTests: 3
   });
   
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [upcomingAssignments, setUpcomingAssignments] = useState([]);
-
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      // Mock data - this would be replaced with actual API calls
-      if (user?.role === 'student') {
-        setStats({
-          cases: { total: 8, pending: 3, completed: 5, grade: 85 },
-          queries: { total: 12, pending: 2, completed: 10, grade: 78 },
-          tests: { total: 5, pending: 1, completed: 4, grade: 92 },
-        });
-        
-        setRecentActivity([
-          { id: 1, type: 'case', title: 'Hypertension Case Study', action: 'evaluated', date: '2023-05-10', grade: 'A-' },
-          { id: 2, type: 'query', title: 'Drug Interaction Query', action: 'submitted', date: '2023-05-08' },
-          { id: 3, type: 'test', title: 'Pharmacology Midterm', action: 'completed', date: '2023-05-05', grade: 'B+' },
-        ]);
-        
-        setUpcomingAssignments([
-          { id: 1, type: 'case', title: 'Diabetes Management Case', dueDate: '2023-05-20' },
-          { id: 2, type: 'query', title: 'Antibiotic Selection Query', dueDate: '2023-05-18' },
-          { id: 3, type: 'test', title: 'Clinical Assessment Test', dueDate: '2023-05-25' },
-        ]);
-      } else if (user?.role === 'teacher') {
-        setStats({
-          cases: { total: 45, pending: 12, completed: 33 },
-          queries: { total: 28, pending: 8, completed: 20 },
-          tests: { total: 7, pending: 2, completed: 5 },
-        });
-        
-        setRecentActivity([
-          { id: 1, type: 'case', title: 'Emma Smith - Hypertension Case', action: 'evaluated', date: '2023-05-10' },
-          { id: 2, type: 'query', title: 'John Doe - Drug Interaction Query', action: 'waiting review', date: '2023-05-08' },
-          { id: 3, type: 'test', title: 'Pharmacology Midterm', action: 'created', date: '2023-05-05' },
-        ]);
-        
-        setUpcomingAssignments([
-          { id: 1, type: 'case', title: 'Review Cardiovascular Cases', dueDate: '2023-05-20' },
-          { id: 2, type: 'query', title: 'Create New Drug Information Queries', dueDate: '2023-05-18' },
-          { id: 3, type: 'test', title: 'Grade Clinical Assessment Tests', dueDate: '2023-05-25' },
-        ]);
-      }
-      
-      setIsLoading(false);
-    }, 1000);
-  }, [user]);
-
-  // Chart data
-  const pieData = {
-    labels: ['Completed', 'Pending'],
-    datasets: [
-      {
-        data: [stats.cases.completed + stats.queries.completed + stats.tests.completed, 
-               stats.cases.pending + stats.queries.pending + stats.tests.pending],
-        backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(255, 99, 132, 0.5)'],
-        borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
-        borderWidth: 1,
-      },
-    ],
+  // Format date to readable format
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
-  const lineData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Performance',
-        data: [65, 70, 68, 72, 78, 85],
-        fill: false,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
-      }
-    ],
+  // Format upcoming test date
+  const formatTestDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const isToday = date.toDateString() === today.toDateString();
+    const isTomorrow = date.toDateString() === tomorrow.toDateString();
+    
+    if (isToday) {
+      return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (isTomorrow) {
+      return `Tomorrow at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else {
+      return `${formatDate(dateString)} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
   };
-
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
+  
+  // Get status color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'draft':
+        return 'default';
+      case 'submitted':
+      case 'assigned':
+        return 'primary';
+      case 'in review':
+        return 'warning';
+      case 'completed':
+      case 'responded':
+      case 'evaluated':
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
+  
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Grid container spacing={3}>
-        {/* Welcome Card */}
-        <Grid item xs={12}>
-          <Paper
-            sx={{
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              backgroundImage: 'linear-gradient(to right, #4facfe 0%, #00f2fe 100%)',
-              color: 'white',
-            }}
-          >
-            <Typography variant="h4" gutterBottom>
-              Welcome back, {user?.firstName}!
-            </Typography>
-            <Typography variant="body1">
-              {user?.role === 'student' 
-                ? 'Track your progress, submit assignments, and continue your clinical education journey.'
-                : 'Manage student assignments, create evaluations, and track student progress.'}
-            </Typography>
-          </Paper>
-        </Grid>
-
-        {/* Quick Stats */}
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 140,
-              bgcolor: '#e3f2fd',
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Clinical Cases
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexGrow: 1 }}>
-              <Box>
-                <Typography variant="h4">{stats.cases.total}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stats.cases.pending} pending
-                </Typography>
-              </Box>
-              <Avatar sx={{ bgcolor: '#2196f3' }}>
-                <Assignment />
-              </Avatar>
-            </Box>
-          </Paper>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 140,
-              bgcolor: '#e8f5e9',
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Queries
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexGrow: 1 }}>
-              <Box>
-                <Typography variant="h4">{stats.queries.total}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stats.queries.pending} pending
-                </Typography>
-              </Box>
-              <Avatar sx={{ bgcolor: '#4caf50' }}>
-                <QuestionAnswer />
-              </Avatar>
-            </Box>
-          </Paper>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 140,
-              bgcolor: '#fff8e1',
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Tests
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexGrow: 1 }}>
-              <Box>
-                <Typography variant="h4">{stats.tests.total}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {stats.tests.pending} pending
-                </Typography>
-              </Box>
-              <Avatar sx={{ bgcolor: '#ffc107' }}>
-                <Quiz />
-              </Avatar>
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* Charts & Activity */}
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" component="h2">
-                {user?.role === 'student' ? 'Your Performance' : 'Student Performance'}
-              </Typography>
-              <IconButton>
-                <MoreVert />
-              </IconButton>
-            </Box>
-            <Divider />
-            
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} md={6}>
-                <Box sx={{ height: 200, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <Pie data={pieData} options={{ maintainAspectRatio: false }} />
-                </Box>
-                <Typography variant="subtitle2" align="center" sx={{ mt: 1 }}>
-                  Completion Status
-                </Typography>
+    <PageLayout title={`Welcome${user ? ', ' + user.firstName : ''}`}>
+      <Box className="fadeIn">
+        <Grid container spacing={3}>
+          {/* Stats Section */}
+          <Grid item xs={12} md={8}>
+            <Grid container spacing={3}>
+              <Grid item xs={6} sm={3}>
+                <CustomCard
+                  bgColor={theme.palette.primary.main}
+                  elevation={2}
+                  sx={{ textAlign: 'center', py: 1 }}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: 'primary.main',
+                      width: 56,
+                      height: 56,
+                      mx: 'auto',
+                      mb: 1,
+                    }}
+                  >
+                    <Assignment />
+                  </Avatar>
+                  <Typography variant="h4" fontWeight="bold">
+                    {stats.casesCount}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Clinical Cases
+                  </Typography>
+                </CustomCard>
               </Grid>
               
-              <Grid item xs={12} md={6}>
-                <Box sx={{ height: 200, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <Line data={lineData} options={{ maintainAspectRatio: false }} />
-                </Box>
-                <Typography variant="subtitle2" align="center" sx={{ mt: 1 }}>
-                  Progress Trend
-                </Typography>
+              <Grid item xs={6} sm={3}>
+                <CustomCard
+                  bgColor={theme.palette.info.main}
+                  elevation={2}
+                  sx={{ textAlign: 'center', py: 1 }}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: 'info.main',
+                      width: 56,
+                      height: 56,
+                      mx: 'auto',
+                      mb: 1,
+                    }}
+                  >
+                    <QuestionAnswer />
+                  </Avatar>
+                  <Typography variant="h4" fontWeight="bold">
+                    {stats.queriesCount}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Queries
+                  </Typography>
+                </CustomCard>
+              </Grid>
+              
+              <Grid item xs={6} sm={3}>
+                <CustomCard
+                  bgColor={theme.palette.warning.main}
+                  elevation={2}
+                  sx={{ textAlign: 'center', py: 1 }}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: 'warning.main',
+                      width: 56,
+                      height: 56,
+                      mx: 'auto',
+                      mb: 1,
+                    }}
+                  >
+                    <Quiz />
+                  </Avatar>
+                  <Typography variant="h4" fontWeight="bold">
+                    {stats.testsCount}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Tests Assigned
+                  </Typography>
+                </CustomCard>
+              </Grid>
+              
+              <Grid item xs={6} sm={3}>
+                <CustomCard
+                  bgColor={theme.palette.success.main}
+                  elevation={2}
+                  sx={{ textAlign: 'center', py: 1 }}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: 'success.main',
+                      width: 56,
+                      height: 56,
+                      mx: 'auto',
+                      mb: 1,
+                    }}
+                  >
+                    <TrendingUp />
+                  </Avatar>
+                  <Typography variant="h4" fontWeight="bold">
+                    {stats.completedTests}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Tests Completed
+                  </Typography>
+                </CustomCard>
               </Grid>
             </Grid>
-          </Paper>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h6" component="h2" gutterBottom>
-              Upcoming Assignments
-            </Typography>
-            <Divider />
             
-            <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-              {upcomingAssignments.map((item) => (
-                <ListItem 
-                  key={item.id}
-                  alignItems="flex-start"
-                  secondaryAction={
-                    <Button 
-                      size="small" 
+            {/* Recent Clinical Cases */}
+            <Box sx={{ mt: 3 }}>
+              <CustomCard
+                title="Recent Clinical Cases"
+                icon={<Assignment fontSize="small" />}
+                action={
+                  <Button 
+                    endIcon={<ArrowForward />} 
+                    size="small"
+                    onClick={() => navigate('/cases')}
+                  >
+                    View All
+                  </Button>
+                }
+                elevation={2}
+              >
+                {recentCases.length === 0 ? (
+                  <Typography variant="body1" color="text.secondary" align="center" sx={{ py: 2 }}>
+                    No clinical cases yet
+                  </Typography>
+                ) : (
+                  <List disablePadding>
+                    {recentCases.map((caseItem, index) => (
+                      <React.Fragment key={caseItem.id}>
+                        {index > 0 && <Divider component="li" />}
+                        <ListItemButton onClick={() => navigate(`/cases/${caseItem.id}`)}>
+                          <ListItemText
+                            primary={caseItem.title}
+                            secondary={`Updated: ${formatDate(caseItem.updatedAt)}`}
+                            primaryTypographyProps={{ fontWeight: 'medium' }}
+                          />
+                          <Chip
+                            label={caseItem.status}
+                            size="small"
+                            color={getStatusColor(caseItem.status)}
+                            sx={{ textTransform: 'capitalize' }}
+                          />
+                        </ListItemButton>
+                      </React.Fragment>
+                    ))}
+                  </List>
+                )}
+                
+                {user?.role === USER_ROLES.STUDENT && (
+                  <Box sx={{ textAlign: 'center', mt: 2 }}>
+                    <Button
                       variant="outlined"
-                      onClick={() => navigate(`/${item.type}s${item.type === 'test' ? '/take' : '/new'}/${item.id}`)}
+                      startIcon={<Add />}
+                      onClick={() => navigate('/cases/new')}
                     >
-                      {user?.role === 'student' ? 'View' : 'Review'}
+                      New Case
                     </Button>
-                  }
-                  sx={{ px: 0 }}
-                >
-                  <ListItemAvatar>
-                    <Avatar sx={{ 
-                      bgcolor: item.type === 'case' ? '#2196f3' : 
-                               item.type === 'query' ? '#4caf50' : '#ffc107' 
-                    }}>
-                      {item.type === 'case' ? <Assignment /> : 
-                       item.type === 'query' ? <QuestionAnswer /> : <Quiz />}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={item.title}
-                    secondary={`Due: ${item.dueDate}`}
-                  />
-                </ListItem>
-              ))}
-            </List>
-            
-            <Box sx={{ mt: 2, alignSelf: 'center' }}>
-              <Button variant="text" onClick={() => navigate('/assignments')}>
-                View all assignments
-              </Button>
+                  </Box>
+                )}
+              </CustomCard>
             </Box>
-          </Paper>
-        </Grid>
-        
-        {/* Recent Activity */}
-        <Grid item xs={12}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h6" component="h2" gutterBottom>
-              Recent Activity
-            </Typography>
-            <Divider />
             
-            <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-              {recentActivity.map((item) => (
-                <ListItem 
-                  key={item.id}
-                  alignItems="flex-start"
-                  secondaryAction={
-                    <Button 
-                      size="small" 
+            {/* Clinical Queries */}
+            <Box sx={{ mt: 3 }}>
+              <CustomCard
+                title="Clinical Queries"
+                icon={<QuestionAnswer fontSize="small" />}
+                action={
+                  <Button 
+                    endIcon={<ArrowForward />} 
+                    size="small"
+                    onClick={() => navigate('/queries')}
+                  >
+                    View All
+                  </Button>
+                }
+                elevation={2}
+              >
+                {recentQueries.length === 0 ? (
+                  <Typography variant="body1" color="text.secondary" align="center" sx={{ py: 2 }}>
+                    No clinical queries yet
+                  </Typography>
+                ) : (
+                  <List disablePadding>
+                    {recentQueries.map((query, index) => (
+                      <React.Fragment key={query.id}>
+                        {index > 0 && <Divider component="li" />}
+                        <ListItemButton onClick={() => navigate(`/queries/${query.id}`)}>
+                          <ListItemText
+                            primary={query.title}
+                            secondary={`Updated: ${formatDate(query.updatedAt)}`}
+                            primaryTypographyProps={{ fontWeight: 'medium' }}
+                          />
+                          <Chip
+                            label={query.status}
+                            size="small"
+                            color={getStatusColor(query.status)}
+                            sx={{ textTransform: 'capitalize' }}
+                          />
+                        </ListItemButton>
+                      </React.Fragment>
+                    ))}
+                  </List>
+                )}
+                
+                {user?.role === USER_ROLES.TEACHER && (
+                  <Box sx={{ textAlign: 'center', mt: 2 }}>
+                    <Button
                       variant="outlined"
-                      onClick={() => navigate(`/${item.type}s/${item.id}`)}
+                      startIcon={<Add />}
+                      onClick={() => navigate('/queries/new')}
                     >
-                      Details
+                      New Query
                     </Button>
-                  }
-                >
-                  <ListItemAvatar>
-                    <Avatar sx={{ 
-                      bgcolor: item.type === 'case' ? '#2196f3' : 
-                               item.type === 'query' ? '#4caf50' : '#ffc107' 
-                    }}>
-                      {item.type === 'case' ? <Assignment /> : 
-                       item.type === 'query' ? <QuestionAnswer /> : <Quiz />}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={item.title}
-                    secondary={
-                      <>
-                        <Typography component="span" variant="body2" color="text.primary">
-                          {item.action.charAt(0).toUpperCase() + item.action.slice(1)}
-                        </Typography>
-                        {` — ${item.date}`}
-                        {item.grade && ` — Grade: ${item.grade}`}
-                      </>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-            
-            <Box sx={{ mt: 2, alignSelf: 'center' }}>
-              <Button variant="text" onClick={() => navigate('/activity')}>
-                View all activity
-              </Button>
+                  </Box>
+                )}
+              </CustomCard>
             </Box>
-          </Paper>
+          </Grid>
+          
+          {/* Sidebar */}
+          <Grid item xs={12} md={4}>
+            {/* Profile Summary */}
+            <CustomCard
+              elevation={2}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                py: 3
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 84,
+                  height: 84,
+                  bgcolor: 'primary.main',
+                  fontSize: '2rem',
+                  mb: 2
+                }}
+              >
+                {user?.firstName?.charAt(0) || 'U'}
+              </Avatar>
+              <Typography variant="h5" fontWeight="bold">
+                {user?.firstName} {user?.lastName}
+              </Typography>
+              <Chip
+                label={user?.role?.toUpperCase() || 'USER'}
+                color="primary"
+                size="small"
+                sx={{ mt: 1, textTransform: 'uppercase', fontWeight: 'bold' }}
+              />
+              
+              <Box sx={{ width: '100%', mt: 3 }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom align="left">
+                  Overall Progress
+                </Typography>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={60} 
+                  sx={{ height: 8, borderRadius: 4 }} 
+                />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Progress
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    60%
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/profile')}
+                sx={{ mt: 2 }}
+              >
+                View Profile
+              </Button>
+            </CustomCard>
+            
+            {/* Upcoming Tests */}
+            <Box sx={{ mt: 3 }}>
+              <CustomCard
+                title="Upcoming Tests"
+                icon={<Quiz fontSize="small" />}
+                action={
+                  <Button 
+                    endIcon={<ArrowForward />} 
+                    size="small"
+                    onClick={() => navigate('/tests')}
+                  >
+                    View All
+                  </Button>
+                }
+                elevation={2}
+              >
+                {upcomingTests.length === 0 ? (
+                  <Typography variant="body1" color="text.secondary" align="center" sx={{ py: 2 }}>
+                    No upcoming tests
+                  </Typography>
+                ) : (
+                  <List disablePadding>
+                    {upcomingTests.map((test, index) => (
+                      <React.Fragment key={test.id}>
+                        {index > 0 && <Divider component="li" />}
+                        <ListItem>
+                          <ListItemAvatar>
+                            <Avatar sx={{ bgcolor: 'warning.main' }}>
+                              <CalendarToday />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={test.title}
+                            secondary={formatTestDate(test.scheduledFor)}
+                            primaryTypographyProps={{ fontWeight: 'medium' }}
+                          />
+                        </ListItem>
+                      </React.Fragment>
+                    ))}
+                  </List>
+                )}
+                
+                {user?.role === USER_ROLES.TEACHER && (
+                  <Box sx={{ textAlign: 'center', mt: 2 }}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<Add />}
+                      onClick={() => navigate('/tests/new')}
+                    >
+                      New Test
+                    </Button>
+                  </Box>
+                )}
+              </CustomCard>
+            </Box>
+            
+            {/* Notifications */}
+            <Box sx={{ mt: 3 }}>
+              <CustomCard
+                title="Notifications"
+                icon={<Notifications fontSize="small" />}
+                elevation={2}
+              >
+                <List disablePadding>
+                  <ListItem>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: 'info.main' }}>
+                        <QuestionAnswer />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary="New query response"
+                      secondary="Dr. Smith responded to your query"
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                    />
+                  </ListItem>
+                  <Divider component="li" />
+                  <ListItem>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: 'success.main' }}>
+                        <Assignment />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary="Case reviewed"
+                      secondary="Your hypertension case was reviewed"
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                    />
+                  </ListItem>
+                </List>
+              </CustomCard>
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
-    </Box>
+      </Box>
+    </PageLayout>
   );
 };
 

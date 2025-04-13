@@ -38,6 +38,9 @@ export const uiSlice = createSlice({
     toggleDarkMode: (state) => {
       state.darkMode = !state.darkMode;
     },
+    setDarkMode: (state, action) => {
+      state.darkMode = action.payload;
+    },
     setLoading: (state, action) => {
       state.loading.global = action.payload;
     },
@@ -50,6 +53,7 @@ export const {
   toggleSidebar,
   setSidebarOpen,
   toggleDarkMode,
+  setDarkMode,
   setLoading,
 } = uiSlice.actions;
 

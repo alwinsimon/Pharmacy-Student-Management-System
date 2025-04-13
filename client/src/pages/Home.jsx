@@ -1,25 +1,26 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector, useTheme } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Container,
-  Divider,
   Grid,
-  Paper,
   Typography,
-  useMediaQuery,
-  Avatar,
   List,
   ListItem,
+  useMediaQuery,
+  Avatar,
+  Chip,
+  Paper,
+  Card,
+  CardContent,
+  Divider,
   ListItemAvatar,
   ListItemText,
   Stack
 } from '@mui/material';
-import { useTheme as useMuiTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import {
   Assignment,
   QuestionAnswer,
@@ -28,13 +29,18 @@ import {
   School,
   LocalPharmacy,
   ArrowForward,
-  CheckCircle
+  CheckCircle,
+  FormatQuote,
+  TrendingUp,
+  DevicesOutlined,
+  SecurityOutlined,
+  FavoriteBorder
 } from '@mui/icons-material';
-import { APP_INFO } from '../utils/constants';
+import { APP_INFO, UI_COLORS } from '../utils/constants';
 
 const Home = () => {
   const navigate = useNavigate();
-  const theme = useMuiTheme();
+  const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isAuthenticated = useSelector(state => !!state.auth.user);
 
@@ -126,6 +132,51 @@ const Home = () => {
               </Box>
             </Grid>
           </Grid>
+        </Container>
+      </Box>
+
+      {/* Features Section */}
+      <Box 
+        sx={{ 
+          py: 10, 
+          textAlign: 'center',
+          background: theme.palette.mode === 'dark' 
+            ? 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(/images/cta-background.jpg)' 
+            : 'linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url(/images/cta-background.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <Container maxWidth="md">
+          <Typography variant="h3" component="h2" gutterBottom fontWeight="bold">
+            Ready to Get Started?
+          </Typography>
+          
+          <Typography variant="body1" paragraph color="text.secondary" sx={{ mb: 4, maxWidth: 700, mx: 'auto' }}>
+            Join thousands of pharmacy students and educators already using our platform to enhance 
+            clinical education experiences.
+          </Typography>
+          
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={() => navigate(isAuthenticated ? '/dashboard' : '/register')}
+            sx={{ 
+              px: 5, 
+              py: 1.5, 
+              borderRadius: 2,
+              boxShadow: theme.shadows[10],
+              fontSize: '1.1rem',
+              transition: 'all 0.3s',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: theme.shadows[15],
+              }
+            }}
+          >
+            {isAuthenticated ? 'Go to Dashboard' : 'Create an Account'}
+          </Button>
         </Container>
       </Box>
     </Box>
