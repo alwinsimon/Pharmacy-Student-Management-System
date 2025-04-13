@@ -7,14 +7,11 @@ import {
   Container,
   Grid,
   Typography,
-  List,
-  ListItem,
   useMediaQuery,
   Paper,
   Card,
   CardContent,
   Avatar,
-  Chip,
   Stack
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';

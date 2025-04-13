@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { register, resetState } from '../features/auth/authSlice';
+import { APP_BASICS } from '../utils/constants';
 import {
   Avatar,
   Button,
@@ -90,7 +91,7 @@ const Register = () => {
             <LockOutlined />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign up for PharmClinical
+            Sign up for {APP_BASICS.SHORT_NAME}
           </Typography>
           
           {isError && showError && (

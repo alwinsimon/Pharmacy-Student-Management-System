@@ -2,6 +2,7 @@ import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { SentimentDissatisfied } from '@mui/icons-material';
+import { APP_INFO } from '../utils/constants';
 
 const NotFound = () => {
   return (

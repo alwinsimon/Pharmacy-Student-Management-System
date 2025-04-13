@@ -19,6 +19,7 @@ import {
 import { LockOutlined } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { APP_INFO } from '../utils/constants';
 
 const Login = () => {
   const [showError, setShowError] = useState(false);
@@ -85,7 +86,7 @@ const Login = () => {
             <LockOutlined />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in to PharmClinical
+            Welcome to {APP_INFO.NAME}
           </Typography>
           
           {isError && showError && (
@@ -160,7 +161,7 @@ const Login = () => {
             <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 5 }}>
               {'© '}
               <Link color="inherit" href="#">
-                PharmClinical
+                {APP_INFO.NAME}
               </Link>{' '}
               {new Date().getFullYear()}
               {'.'}

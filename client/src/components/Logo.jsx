@@ -2,9 +2,9 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { LocalPharmacy } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-
+import { APP_BASICS } from '../utils/constants';
 /**
- * Logo component for the PharmClinical application
+ * Logo component for the application
  * @param {Object} props - Component props
  * @param {string} props.variant - Logo variant ('full', 'icon', or 'text')
  * @param {number} props.size - Size of the logo
@@ -33,7 +33,7 @@ const Logo = ({ variant = 'full', size = 40, color }) => {
           letterSpacing: '.1rem',
         }}
       >
-        PharmClinical
+        {APP_BASICS.SHORT_NAME}
       </Typography>
     );
   }
@@ -51,7 +51,7 @@ const Logo = ({ variant = 'full', size = 40, color }) => {
           letterSpacing: '.1rem',
         }}
       >
-        PharmClinical
+        {APP_BASICS.SHORT_NAME}
       </Typography>
     </Box>
   );

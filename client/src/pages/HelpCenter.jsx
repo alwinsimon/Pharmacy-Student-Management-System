@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { APP_BASICS } from '../utils/constants';
 import {
   Box,
   Container,
@@ -284,7 +285,7 @@ const HelpCenter = () => {
           <Email sx={{ mr: 2, color: 'primary.main' }} />
           <Typography variant="body1">
             Alternatively, you can reach our support team directly at{' '}
-            <strong>support@pharmclinical.com</strong>
+            <strong>support@{APP_BASICS.SHORT_NAME}.com</strong>
           </Typography>
         </Box>
       </Paper>

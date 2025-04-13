@@ -30,6 +30,7 @@ import {
 import { USER_ROLES } from '../utils/constants';
 import CustomCard from '../components/CustomCard';
 import PageLayout from '../components/PageLayout';
+import { APP_INFO } from '../utils/constants';
 
 // Mock data
 const recentCases = [

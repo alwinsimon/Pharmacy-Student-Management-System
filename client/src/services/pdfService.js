@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import logo from '../assets/logo.png'; // You'll need to add a logo image to your assets
+import { APP_BASICS } from '../utils/constants';
 
 export const generateCasePDF = (caseData) => {
   const doc = new jsPDF();
@@ -9,7 +10,7 @@ export const generateCasePDF = (caseData) => {
   doc.addImage(logo, 'PNG', 15, 10, 30, 30);
   doc.setFontSize(20);
   doc.setTextColor(0, 51, 102);
-  doc.text('PharmClinical', 50, 25);
+  doc.text(`${APP_BASICS.SHORT_NAME}`, 50, 25);
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
   doc.text('Case Documentation Report', 50, 32);
@@ -143,7 +144,7 @@ export const generateCasePDF = (caseData) => {
     doc.setFontSize(10);
     doc.setTextColor(150, 150, 150);
     doc.text(`Page ${i} of ${pageCount}`, 100, 285, { align: 'center' });
-    doc.text('PharmClinical - Pharmacy Student Management System', 100, 292, { align: 'center' });
+    doc.text(`${APP_BASICS.SHORT_NAME} - Pharmacy Student Management System`, 100, 292, { align: 'center' });
   }
   
   return doc;
@@ -157,7 +158,7 @@ export const generateQueryPDF = (queryData) => {
   doc.addImage(logo, 'PNG', 15, 10, 30, 30);
   doc.setFontSize(20);
   doc.setTextColor(0, 51, 102);
-  doc.text('PharmClinical', 50, 25);
+  doc.text(`${APP_BASICS.SHORT_NAME}`, 50, 25);
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
   doc.text('Drug Information Query Report', 50, 32);
@@ -180,7 +181,7 @@ export const generateTestPDF = (testData) => {
   doc.addImage(logo, 'PNG', 15, 10, 30, 30);
   doc.setFontSize(20);
   doc.setTextColor(0, 51, 102);
-  doc.text('PharmClinical', 50, 25);
+  doc.text(`${APP_BASICS.SHORT_NAME}`, 50, 25);
   doc.setFontSize(12);
   doc.setTextColor(100, 100, 100);
   doc.text('Test Results Report', 50, 32);

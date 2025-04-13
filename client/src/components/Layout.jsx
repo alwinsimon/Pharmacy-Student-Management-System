@@ -33,6 +33,7 @@ import {
   Logout
 } from '@mui/icons-material';
 import { logout } from '../features/auth/authSlice';
+import { APP_INFO } from '../utils/constants';
 
 const drawerWidth = 240;
 
@@ -78,7 +79,7 @@ const Layout = () => {
     <div>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          PharmClinical
+          {APP_INFO.NAME}
         </Typography>
       </Toolbar>
       <Divider />
