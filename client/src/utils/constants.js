@@ -2,6 +2,40 @@
  * Application constants
  */
 
+// Application Information
+export const APP_INFO = {
+  NAME: 'JKKN PharmaEHR',
+  FULL_NAME: 'Pharmacy Student Management System',
+  VERSION: '1.0.0',
+  COPYRIGHT: `© ${new Date().getFullYear()} PharmClinical. All rights reserved.`,
+  SUPPORT_EMAIL: 'support@pharmclinical.com',
+  WEBSITE: 'https://www.pharmclinical.com',
+  DESCRIPTION: 'A comprehensive platform for pharmacy student clinical education management',
+  LOGO_PATH: '/logo.png',
+  FEATURES: [
+    {
+      name: 'Case Management',
+      description: 'Document and manage clinical cases',
+      icon: 'Assignment'
+    },
+    {
+      name: 'Clinical Queries',
+      description: 'Ask and respond to clinical questions',
+      icon: 'QuestionAnswer'
+    },
+    {
+      name: 'Assessments',
+      description: 'Create and take tests to evaluate knowledge',
+      icon: 'Quiz'
+    },
+    {
+      name: 'Performance Tracking',
+      description: 'Track progress and performance metrics',
+      icon: 'BarChart'
+    }
+  ]
+};
+
 // User roles
 export const USER_ROLES = {
   STUDENT: 'student',
@@ -92,4 +126,36 @@ export const UPLOAD_CONFIG = {
     'application/msword': ['.doc'],
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
   },
+};
+
+// Theme options
+export const THEME_SETTINGS = {
+  LIGHT: {
+    name: 'light',
+    label: 'Light Mode',
+  },
+  DARK: {
+    name: 'dark',
+    label: 'Dark Mode',
+  },
+  SYSTEM: {
+    name: 'system',
+    label: 'System Default',
+  }
+};
+
+// Navigation menu
+export const NAVIGATION = {
+  MAIN: [
+    { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: 'Dashboard', roles: [USER_ROLES.ADMIN, USER_ROLES.TEACHER, USER_ROLES.STUDENT] },
+    { id: 'cases', label: 'Clinical Cases', path: '/cases', icon: 'Assignment', roles: [USER_ROLES.ADMIN, USER_ROLES.TEACHER, USER_ROLES.STUDENT] },
+    { id: 'queries', label: 'Queries', path: '/queries', icon: 'QuestionAnswer', roles: [USER_ROLES.ADMIN, USER_ROLES.TEACHER, USER_ROLES.STUDENT] },
+    { id: 'tests', label: 'Tests', path: '/tests', icon: 'Quiz', roles: [USER_ROLES.ADMIN, USER_ROLES.TEACHER, USER_ROLES.STUDENT] },
+    { id: 'admin', label: 'Admin Panel', path: '/admin', icon: 'AdminPanelSettings', roles: [USER_ROLES.ADMIN] }
+  ],
+  USER: [
+    { id: 'profile', label: 'Profile', path: '/profile', icon: 'Person', roles: [USER_ROLES.ADMIN, USER_ROLES.TEACHER, USER_ROLES.STUDENT] },
+    { id: 'settings', label: 'Settings', path: '/settings', icon: 'Settings', roles: [USER_ROLES.ADMIN, USER_ROLES.TEACHER, USER_ROLES.STUDENT] },
+    { id: 'help', label: 'Help Center', path: '/help', icon: 'Help', roles: [USER_ROLES.ADMIN, USER_ROLES.TEACHER, USER_ROLES.STUDENT] }
+  ]
 }; 

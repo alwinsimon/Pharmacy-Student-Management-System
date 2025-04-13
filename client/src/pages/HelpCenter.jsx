@@ -17,7 +17,8 @@ import {
   ListItemText,
   Alert,
   Card,
-  CardContent
+  CardContent,
+  Link
 } from '@mui/material';
 import {
   ExpandMore,
@@ -27,7 +28,10 @@ import {
   QuestionAnswer,
   Quiz,
   Email,
-  Send
+  Send,
+  Article,
+  Phone,
+  Link as LinkIcon
 } from '@mui/icons-material';
 
 const FAQItem = ({ question, answer }) => (
