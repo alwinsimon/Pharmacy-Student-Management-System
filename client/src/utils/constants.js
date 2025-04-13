@@ -4,7 +4,7 @@
 
 // Basic application details
 export const APP_BASICS = {
-  SHORT_NAME: 'JKKN PharmaEHR',
+  SHORT_NAME: 'JKKN PharmaED',
   DOMAIN: 'pharmehr.jkkn.edu.in',
   ORGANIZATION: 'JKKN Pharmacy College',
   CURRENT_YEAR: new Date().getFullYear(),
