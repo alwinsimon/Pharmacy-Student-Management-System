@@ -6,37 +6,27 @@ import {
   Button,
   CircularProgress,
   Container,
-  Divider,
   FormControl,
-  FormControlLabel,
-  FormHelperText,
   Grid,
   IconButton,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
-  Radio,
-  RadioGroup,
   Select,
   Stack,
-  Switch,
-  Tab,
-  Tabs,
   TextField,
   Typography,
-  Alert,
   Chip,
   TableContainer,
   Table,
   TableHead,
   TableBody,
   TableRow,
+  TableCell,
   TablePagination,
   Card,
   CardContent,
-  CardHeader,
-  FormGroup
+  Tooltip
 } from '@mui/material';
 import {
   Add,
@@ -46,19 +36,43 @@ import {
   PlayArrow,
   Search,
   Visibility,
-  ArrowBack
+  Quiz
 } from '@mui/icons-material';
-import { getTests, getTestById, createTest, updateTest, resetTestState, clearCurrentTest } from '../../features/tests/testsSlice';
+
 
 const TestList = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { tests, isLoading } = useSelector((state) => state.tests);
+  const { user } = useSelector((state) => state.auth);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [filteredTests, setFilteredTests] = useState([]);
+
+  useEffect(() => {
+    if (tests) {
+      let filtered = [...tests];
+      
+      // Apply status filter
+      if (statusFilter !== 'all') {
+        filtered = filtered.filter(test => test.status === statusFilter);
+      }
+      
+      // Apply search filter
+      if (searchTerm) {
+        filtered = filtered.filter(test => 
+          test.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          test.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      
+      setFilteredTests(filtered);
+    } else {
+      setFilteredTests([]);
+    }
+  }, [tests, statusFilter, searchTerm]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);

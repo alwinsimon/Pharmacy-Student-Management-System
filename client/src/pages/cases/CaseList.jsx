@@ -2,69 +2,44 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
   Button,
-  CircularProgress,
   Container,
-  Divider,
   FormControl,
-  FormHelperText,
-  Grid,
   IconButton,
   InputAdornment,
   InputLabel,
   MenuItem,
   Paper,
   Select,
-  Stepper,
-  Step,
-  StepLabel,
   TextField,
   Typography,
-  Alert,
   Stack,
   Card,
   CardContent,
-  CardHeader,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
   Tooltip,
-  LinearProgress,
   TableContainer,
   Table,
   TableHead,
   TableBody,
   TableRow,
   TableCell,
-  TablePagination
+  TablePagination,
+  Chip
 } from '@mui/material';
 import {
-  Save,
-  ArrowBack,
-  ArrowForward,
-  PersonAdd,
-  MedicalInformation,
   Assignment,
-  Science,
-  MenuBook,
-  CloudUpload,
   Delete,
   FilterList,
   Edit,
   Visibility,
-  Add
+  Add,
+  Clear
 } from '@mui/icons-material';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import { getCaseById, createCase, updateCase, submitCase, resetCaseState, clearCurrentCase } from '../../features/cases/casesSlice';
-import { useDropzone } from 'react-dropzone';
+
 
 const CaseList = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { cases, isLoading, isSuccess, isError, message } = useSelector((state) => state.cases);
+  const { cases } = useSelector((state) => state.cases);
   const { user } = useSelector((state) => state.auth);
 
   const [statusFilter, setStatusFilter] = useState('all');

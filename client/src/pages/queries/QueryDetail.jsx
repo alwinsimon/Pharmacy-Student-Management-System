@@ -23,7 +23,8 @@ import {
   Avatar,
   Rating,
   Tab,
-  Tabs
+  Tabs,
+  Stack
 } from '@mui/material';
 import {
   ArrowBack,
