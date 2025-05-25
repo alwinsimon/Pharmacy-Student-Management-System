@@ -1,7 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// In production, use relative URLs since frontend and backend are served from the same domain
+// In development, use localhost:5000
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? '' // Use relative URLs in production
+  : (process.env.REACT_APP_API_URL || 'http://localhost:5000');
 
 // Register user
 export const register = createAsyncThunk(

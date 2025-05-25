@@ -10,7 +10,11 @@ let socket = null;
  */
 export const initializeSocket = (token, dispatch) => {
   // Create socket connection with authentication
-  socket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
+  const socketURL = process.env.NODE_ENV === 'production' 
+    ? window.location.origin // Use current domain in production
+    : (process.env.REACT_APP_API_URL || 'http://localhost:5000');
+  
+  socket = io(socketURL, {
     auth: {
       token
     }
