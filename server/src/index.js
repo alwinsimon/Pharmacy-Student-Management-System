@@ -115,19 +115,25 @@ app.use('/api/queries', queryRoutes);
 app.use('/api/tests', testRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+// Health check route (available in all environments)
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
+  });
+});
+
 // Serve static files from the React app build directory in production
 if (process.env.NODE_ENV === 'production') {
   const buildPath = path.join(__dirname, '../../client/build');
   app.use(express.static(buildPath));
   
   // Catch all handler: send back React's index.html file for any non-API routes
+  // This must be AFTER all other routes to avoid intercepting them
   app.get('*', (req, res) => {
     res.sendFile(path.join(buildPath, 'index.html'));
-  });
-} else {
-  // Health check route (only for development)
-  app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
   });
 }
 
