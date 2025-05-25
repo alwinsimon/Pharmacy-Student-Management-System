@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Password is required'],
       minlength: [8, 'Password must be at least 8 characters'],
+      select: false, // Don't include password in queries by default
     },
     role: {
       type: String,
@@ -59,6 +60,10 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
   },
   {
     timestamps: true,

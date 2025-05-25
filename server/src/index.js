@@ -38,23 +38,51 @@ const io = new Server(httpServer, {
   },
 });
 
+// MongoDB connection with better error handling
+const connectDB = async () => {
+  try {
+    if (!process.env.MONGODB_URI) {
+      console.log('⚠️  MONGODB_URI not provided. Running without database connection.');
+      return;
+    }
+    
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+    
+    // In development, continue without DB for testing
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 Development Mode: Continuing without database connection');
+      console.log('💡 To fix this:');
+      console.log('   1. Set up a local MongoDB instance, or');
+      console.log('   2. Use a cloud MongoDB service like Atlas, or');
+      console.log('   3. Update your MONGODB_URI in the .env file');
+      return;
+    }
+    
+    // In production, exit if DB connection fails
+    process.exit(1);
+  }
+};
+
 // Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+connectDB();
 
 // Swagger configuration
+const appConfig = {
+  NAME: process.env.APP_NAME || 'JKKN PharmaED',
+  VERSION: process.env.APP_VERSION || '1.0.0',
+  DESCRIPTION: process.env.APP_DESCRIPTION || 'API for Pharmacy Student Management System',
+};
+
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'PharmClinical API',
-      version: '1.0.0',
-      description: 'API for Pharmacy Student Management System',
+      title: `${appConfig.NAME} API`,
+      version: appConfig.VERSION,
+      description: appConfig.DESCRIPTION,
     },
     servers: [
       {

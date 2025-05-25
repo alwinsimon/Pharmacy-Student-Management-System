@@ -1,5 +1,4 @@
 const passport = require('passport');
-const jwt = require('jsonwebtoken');
 
 /**
  * Authenticate user using JWT
@@ -20,6 +19,7 @@ const authorize = (roles = []) => {
     (req, res, next) => {
       if (!roles.includes(req.user.role)) {
         return res.status(403).json({
+          success: false,
           message: 'Forbidden: You do not have permission to access this resource',
         });
       }
@@ -28,39 +28,7 @@ const authorize = (roles = []) => {
   ];
 };
 
-/**
- * Generate JWT token
- * @param {Object} user - User object
- */
-const generateToken = (user) => {
-  return jwt.sign(
-    {
-      id: user._id,
-      email: user.email,
-      role: user.role,
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: '1h' }
-  );
-};
-
-/**
- * Generate refresh token
- * @param {Object} user - User object
- */
-const generateRefreshToken = (user) => {
-  return jwt.sign(
-    {
-      id: user._id,
-    },
-    process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: '7d' }
-  );
-};
-
 module.exports = {
   authenticate,
   authorize,
-  generateToken,
-  generateRefreshToken,
 }; 

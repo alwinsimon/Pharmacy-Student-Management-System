@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
+const { 
+  validateRegister, 
+  validateLogin, 
+  validateRefreshToken,
+  handleValidationErrors 
+} = require('../middleware/validation.middleware');
 
 /**
  * @swagger
@@ -41,7 +47,7 @@ const authController = require('../controllers/auth.controller');
  *       500:
  *         description: Server error
  */
-router.post('/register', authController.register);
+router.post('/register', validateRegister, handleValidationErrors, authController.register);
 
 /**
  * @swagger
@@ -73,7 +79,7 @@ router.post('/register', authController.register);
  *       500:
  *         description: Server error
  */
-router.post('/login', authController.login);
+router.post('/login', validateLogin, handleValidationErrors, authController.login);
 
 /**
  * @swagger
