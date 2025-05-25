@@ -1,30 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
-  Avatar,
-  Box,
   Button,
   Container,
-  Divider,
   Grid,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
   Paper,
   Typography
 } from '@mui/material';
 import {
-  BarChart,
   PictureAsPdf,
-  PlayArrow,
-  Shuffle
+  PlayArrow
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const TestDetail = () => {
   const { id } = useParams();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const [currentTest, setCurrentTest] = useState(null);
