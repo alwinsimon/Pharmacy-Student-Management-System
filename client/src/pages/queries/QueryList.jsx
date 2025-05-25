@@ -1,27 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
   Button,
   Chip,
   CircularProgress,
   Container,
-  Divider,
-  FormControl,
-  FormHelperText,
-  Grid,
   IconButton,
-  InputLabel,
-  LinearProgress,
-  MenuItem,
-  Paper,
-  Select,
-  TextField,
-  Typography,
-  Alert,
-  Stack,
-  Autocomplete,
   Table,
   TableBody,
   TableCell,
@@ -29,39 +15,29 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  Typography,
   Tooltip
 } from '@mui/material';
 import {
-  Save,
   ArrowBack,
-  CloudUpload,
   Delete,
-  Person,
-  Send,
   Visibility,
   Edit
 } from '@mui/icons-material';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import { useDropzone } from 'react-dropzone';
-import { getQueryById, createQuery, updateQuery, resetQueryState, clearCurrentQuery } from '../../features/queries/queriesSlice';
-import { userService } from '../../services/api';
+
 
 const QueryList = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const { queries, isLoading } = useSelector((state) => state.queries);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filteredQueries, setFilteredQueries] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    dispatch(getQueryById(id));
-  }, [id, dispatch]);
-
-  useEffect(() => {
-    if (queries.length > 0) {
+    if (queries && queries.length > 0) {
       let filtered = [...queries];
       
       // Apply status filter
@@ -78,6 +54,8 @@ const QueryList = () => {
       }
       
       setFilteredQueries(filtered);
+    } else {
+      setFilteredQueries([]);
     }
   }, [queries, statusFilter, searchTerm, user]);
 

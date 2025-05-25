@@ -11,8 +11,6 @@ import {
   Container,
   Divider,
   Grid,
-  IconButton,
-  LinearProgress,
   List,
   ListItem,
   ListItemAvatar,
@@ -27,22 +25,15 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  Stack
 } from '@mui/material';
 import {
   ArrowBack,
   PictureAsPdf,
-  Quiz,
   Edit,
-  Schedule,
-  Person,
-  School,
   PlayArrow,
-  BarChart,
-  CheckCircle,
-  Radio,
-  Checkbox,
-  Warning
+  Shuffle
 } from '@mui/icons-material';
 import { getTestById, getClassResults } from '../../features/tests/testsSlice';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement } from 'chart.js';
